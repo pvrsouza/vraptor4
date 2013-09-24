@@ -45,30 +45,6 @@ import br.com.caelum.vraptor.validator.ValidationMessage;
 @Controller
 public class HomeController {
 
-    private Result result;
-    private Validator validator;
-    private UserInfo userInfo;
-	private UserDao dao;
-
-	//CDI eyes only
-	@Deprecated
-	public HomeController() {}
-
-	/**
-	 * You can receive any dependency on constructor. If VRaptor knows all dependencies, this
-	 * class will be created with no problem. You can use as dependencies:
-	 * - all VRaptor components, e.g {@link Result} and {@link Validator}
-	 * - all of your classes annotated with @Component, e.g {@link DefaultUserDao}
-	 * - all of the classes that have a {@link ComponentFactory}, e.g {@link Session} or {@link SessionFactory}
-	 */
-	@Inject
-	public HomeController(UserDao dao, UserInfo userInfo, Result result, Validator validator) {
-	    this.dao = dao;
-		this.result = result;
-	    this.validator = validator;
-        this.userInfo = userInfo;
-	}
-
 	/**
 	 * Using it only to indicate to vaas that this is the logout method
 	 */
@@ -79,6 +55,7 @@ public class HomeController {
 	 * Using it only to indicate to vaas that this is the login method
 	 */
 	public void login() {
+		System.out.println("Só para descobrir quem chamou...");
 	}
 
 	public void loginForm() {

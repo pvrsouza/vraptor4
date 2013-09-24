@@ -13,6 +13,7 @@ import br.com.caelum.vraptor.musicjungle.model.User;
 import br.com.caelum.vraptor.vaas.event.AuthenticateFailedEvent;
 import br.com.caelum.vraptor.vaas.event.AuthenticatedEvent;
 import br.com.caelum.vraptor.vaas.event.AuthorizationFailedEvent;
+import br.com.caelum.vraptor.vaas.event.LogoutEvent;
 
 @RequestScoped
 public class AuthHandlers {
@@ -35,6 +36,10 @@ public class AuthHandlers {
 	}
 
 	public void handle(@Observes AuthorizationFailedEvent event){		
+		result.redirectTo(HomeController.class).loginForm();
+	}
+	
+	public void handle(@Observes LogoutEvent event){
 		result.redirectTo(HomeController.class).loginForm();
 	}
 
