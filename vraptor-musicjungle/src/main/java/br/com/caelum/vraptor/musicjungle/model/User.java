@@ -22,6 +22,7 @@ import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -58,6 +59,13 @@ public class User implements Serializable {
 	// user to music mapping,
 	@OneToMany(mappedBy="owner")
 	private Set<MusicOwner> musicOwners;
+	
+	@ManyToMany
+	private Set<Role> roles = new HashSet<Role>();
+
+	public Set<Role> getRoles() {
+		return roles;
+	}	
 
 	public Set<MusicOwner> getMusicOwners() {
 		if (musicOwners == null) {

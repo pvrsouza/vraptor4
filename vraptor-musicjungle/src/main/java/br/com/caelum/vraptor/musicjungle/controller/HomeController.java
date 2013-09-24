@@ -70,64 +70,19 @@ public class HomeController {
 	}
 
 	/**
-	 * Since we are using the convention, the URI for this method is
-	 * /home/login
-	 *
-	 * The method parameters are set with request parameters named
-	 * login and password. Thus if we have the request:
-	 *
-	 * POST /home/login
-	 * login=john
-	 * password=nobodyknows
-	 *
-	 * VRaptor will call:
-	 * homeController.login("john", "nobodyknows");
-	 *
-	 * This method only accept POST requests
-	 */
-	@Post
-	@Public
-	public void login(String login, String password) {
-		// search for the user in the database
-		final User currentUser = dao.find(login, password);
-
-		// if no user is found, adds an error message to the validator
-		// "invalid_login_or_password" is the message key from messages.properties,
-		// and that key is used with the fmt taglib in index.jsp, for example: <fmt:message key="error.key">
-		validator.check(currentUser != null, new ValidationMessage("login", "invalid_login_or_password"));
-		
-		// you can use "this" to redirect to another logic from this controller
-		validator.onErrorUsePageOf(this).login();
-
-		// the login was valid, add user to session
-		userInfo.login(currentUser);
-
-		// we don't want to go to default page (/WEB-INF/jsp/home/login.jsp)
-		// we want to redirect to the user's home
-		result.redirectTo(UsersController.class).home();
-	}
-
-	/**
-	 * Using the convention, the URI for this method is
-	 * /home/logout
+	 * Using it only to indicate to vaas that this is the logout method
 	 */
 	public void logout() {
-	    userInfo.logout();
-	    // after logging out, we want to be redirected to home index.
-	    // you can use "this" to redirect to another logic from this controller
-	    result.redirectTo(this).login();
 	}
 
 	/**
-	 * We should not provide direct access to jsps, so we need to have an empty method
-	 * for redirecting to jsp. In this case we will use the root URI, which will be
-	 * redirected to jsp /WEB-INF/jsp/home/login.jsp
-	 *
-	 * This method only accepts GET requests
+	 * Using it only to indicate to vaas that this is the login method
 	 */
-	@Public
-	@Get
 	public void login() {
+	}
+
+	public void loginForm() {
+		
 	}
 
 }

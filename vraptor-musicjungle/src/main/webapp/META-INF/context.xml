@@ -1,0 +1,6 @@
+<Context>
+<Realm className="org.apache.catalina.realm.JDBCRealm" digest="SHA"
+	driverName="com.mysql.jdbc.Driver" connectionURL="jdbc:mysql://localhost/musicjungle?user=root"
+	userTable="User" userNameCol="login" userCredCol="password"
+	userRoleTable="User_Role" roleNameCol="roles_name" />
+</Context>        

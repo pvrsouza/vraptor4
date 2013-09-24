@@ -6,11 +6,11 @@
 <hibernate-configuration>
 
 	<session-factory>
-	
-		<property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property>
-		<property name="hibernate.connection.url">jdbc:hsqldb:mem:musicjungleDB</property>
-		<property name="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</property>
-		<property name="hibernate.connection.username">sa</property>
+
+		<property name="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</property>
+		<property name="hibernate.connection.url">jdbc:mysql://localhost/musicjungle</property>
+		<property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+		<property name="hibernate.connection.username">root</property>
 		<property name="hibernate.connection.password"></property>
 
 		<property name="hibernate.show_sql">true</property>
@@ -20,6 +20,7 @@
  		<mapping class="br.com.caelum.vraptor.musicjungle.model.Music" />
  		<mapping class="br.com.caelum.vraptor.musicjungle.model.MusicOwner" />
  		<mapping class="br.com.caelum.vraptor.musicjungle.model.User" />
+ 		<mapping class="br.com.caelum.vraptor.musicjungle.model.Role" />
 
 	</session-factory>
 
