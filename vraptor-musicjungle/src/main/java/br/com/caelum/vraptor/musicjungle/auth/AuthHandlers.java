@@ -14,6 +14,7 @@ import br.com.caelum.vraptor.vaas.event.AuthenticateFailedEvent;
 import br.com.caelum.vraptor.vaas.event.AuthenticatedEvent;
 import br.com.caelum.vraptor.vaas.event.AuthorizationFailedEvent;
 import br.com.caelum.vraptor.vaas.event.LogoutEvent;
+import br.com.caelum.vraptor.vaas.event.RefreshUserEvent;
 
 @RequestScoped
 public class AuthHandlers {
@@ -29,6 +30,10 @@ public class AuthHandlers {
 		User user = userDao.find(event.getUserPrincipal().getName());
 		userInfo.login(user);
 		result.redirectTo(UsersController.class).home();
+	}
+	
+	public void handle(@Observes RefreshUserEvent userEvent){
+		userDao.refresh(userInfo.getUser());
 	}
 
 	public void handle(@Observes AuthenticateFailedEvent event){
