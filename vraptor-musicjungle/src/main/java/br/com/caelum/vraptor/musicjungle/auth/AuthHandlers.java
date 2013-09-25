@@ -33,7 +33,9 @@ public class AuthHandlers {
 	}
 	
 	public void handle(@Observes RefreshUserEvent userEvent){
-		userDao.refresh(userInfo.getUser());
+		if(userInfo.getUser()!=null){
+			userDao.refresh(userInfo.getUser());
+		}
 	}
 
 	public void handle(@Observes AuthenticateFailedEvent event){

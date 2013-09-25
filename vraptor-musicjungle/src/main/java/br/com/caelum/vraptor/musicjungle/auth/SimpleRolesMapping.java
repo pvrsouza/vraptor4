@@ -21,6 +21,7 @@ public class SimpleRolesMapping implements RolesMapping {
 	{
 		map.put("/", asList("administrador"));
 		map.put("/users", asList("baiano"));
+		map.put("/users/.*", asList("baiano"));
 	}
 
 	@Override
