@@ -3,6 +3,8 @@ package br.com.caelum.vraptor.musicjungle.auth;
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 
 import br.com.caelum.vraptor.Result;
 import br.com.caelum.vraptor.musicjungle.controller.HomeController;
@@ -25,6 +27,8 @@ public class AuthHandlers {
 	private UserInfo userInfo;
 	@Inject
 	private UserDao userDao;
+	@Inject
+	private HttpServletRequest request;
 
 	public void handle(@Observes AuthenticatedEvent event){
 		User user = userDao.find(event.getUserPrincipal().getName());
@@ -33,9 +37,7 @@ public class AuthHandlers {
 	}
 	
 	public void handle(@Observes RefreshUserEvent userEvent){
-		if(userInfo.getUser()!=null){
-			userDao.refresh(userInfo.getUser());
-		}
+		userDao.refresh(userInfo.getUser());
 	}
 
 	public void handle(@Observes AuthenticateFailedEvent event){
@@ -46,7 +48,8 @@ public class AuthHandlers {
 		result.redirectTo(HomeController.class).loginForm();
 	}
 	
-	public void handle(@Observes LogoutEvent event){
+	public void handle(@Observes LogoutEvent event) throws ServletException{
+		request.logout();
 		result.redirectTo(HomeController.class).loginForm();
 	}
 
