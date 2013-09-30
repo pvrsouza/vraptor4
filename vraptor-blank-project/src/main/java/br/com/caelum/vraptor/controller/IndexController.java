@@ -12,7 +12,7 @@ public class IndexController {
 	@Inject private Result result;
 
 	@Path("/")
-	public void index() {
+	public void index() {		
 		result.include("variable", "VRaptor!");
 	}
 }
