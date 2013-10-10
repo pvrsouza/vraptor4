@@ -22,6 +22,7 @@ import static br.com.caelum.vraptor.view.Results.representation;
 import static br.com.caelum.vraptor.view.Results.xml;
 
 import java.io.File;
+import java.io.IOException;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -167,7 +168,7 @@ public class MusicController {
 	
 	@Path("/musics/download/{m.id}")
 	@Get
-	public Download download(Music m){
+	public Download download(Music m) throws IOException{
 		Music music = musicDao.load(m);
 		File file = musics.getFile(music);
 		String contentType = "audio/mpeg";
