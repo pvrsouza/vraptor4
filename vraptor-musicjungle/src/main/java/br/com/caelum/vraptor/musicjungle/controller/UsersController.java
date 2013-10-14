@@ -116,7 +116,7 @@ public class UsersController {
 
 		// you can add objects to result even in redirects. Added objects will
 		// survive one more request when redirecting.
-		result.include("notice", "User " + user.getName() + " successfully added");
+		result.include("notice", "User " + user.getName() + " successfully added");		
 		result.redirectTo(HomeController.class).login();
 	}
 

@@ -116,6 +116,12 @@
 			<artifactId>jstl</artifactId>
 			<version>1.2</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.headius</groupId>
+			<artifactId>invokebinder</artifactId>
+			<version>1.2</version>
+		</dependency>		
 	</dependencies>
 
 	<build>
