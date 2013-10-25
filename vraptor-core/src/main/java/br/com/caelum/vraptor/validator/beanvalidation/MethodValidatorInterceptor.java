@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import javax.enterprise.context.RequestScoped;
+import javax.enterprise.inject.Any;
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 import javax.validation.MessageInterpolator;
@@ -66,7 +67,7 @@ public class MethodValidatorInterceptor implements Interceptor {
 	private final MethodInfo methodInfo;
 	private final Validator validator;
 	private final ParameterNameProvider parameterNameProvider;
-	private final javax.validation.Validator bvalidator;
+	private final @Any javax.validation.Validator bvalidator;
 
 	/** 
 	 * @deprecated CDI eyes only

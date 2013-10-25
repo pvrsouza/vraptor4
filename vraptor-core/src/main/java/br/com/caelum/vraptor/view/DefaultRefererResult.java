@@ -24,6 +24,7 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.ArrayList;
 
 import javax.enterprise.context.RequestScoped;
+import javax.enterprise.inject.Any;
 import javax.inject.Inject;
 
 import net.vidageek.mirror.dsl.Mirror;
@@ -40,7 +41,7 @@ import br.com.caelum.vraptor.validator.Message;
 @RequestScoped
 public class DefaultRefererResult implements RefererResult {
 
-	private final MutableRequest request;
+	private final @Any MutableRequest request;
 	private final Result result;
 	private final Router router;
 	private final ParametersProvider provider;

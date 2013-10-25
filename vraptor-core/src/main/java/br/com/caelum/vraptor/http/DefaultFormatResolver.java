@@ -16,6 +16,7 @@
 package br.com.caelum.vraptor.http;
 
 import javax.enterprise.context.RequestScoped;
+import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 
@@ -32,7 +33,7 @@ import br.com.caelum.vraptor.view.AcceptHeaderToFormat;
 @RequestScoped
 public class DefaultFormatResolver implements FormatResolver {
 
-	private final HttpServletRequest request;
+	private final @Alternative HttpServletRequest request;
 	private final AcceptHeaderToFormat acceptHeaderToFormat;
 
 	/** 

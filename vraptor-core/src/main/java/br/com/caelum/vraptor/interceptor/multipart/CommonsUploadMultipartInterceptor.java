@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.enterprise.context.RequestScoped;
+import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 
@@ -63,7 +64,7 @@ public class CommonsUploadMultipartInterceptor implements Interceptor {
 
 	private static final Logger logger = LoggerFactory.getLogger(CommonsUploadMultipartInterceptor.class);
 
-	private final MutableRequest request;
+	private final @Alternative MutableRequest request;
 	private final MultipartConfig config;
 	private final Validator validator;
 

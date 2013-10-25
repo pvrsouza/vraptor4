@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
@@ -55,7 +56,7 @@ public class ParametersInstantiatorInterceptor implements Interceptor {
 	private final ParameterNameProvider parameterNameProvider;
 	private final MethodInfo parameters;
 	private final Validator validator;
-	private final MutableRequest request;
+	private final @Alternative MutableRequest request;
 	private final FlashScope flash;
 
 	private final List<Message> errors = new ArrayList<>();

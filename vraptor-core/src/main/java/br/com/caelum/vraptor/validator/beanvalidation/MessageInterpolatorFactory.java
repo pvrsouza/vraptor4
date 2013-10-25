@@ -4,6 +4,7 @@
 package br.com.caelum.vraptor.validator.beanvalidation;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.validation.MessageInterpolator;
@@ -24,7 +25,7 @@ public class MessageInterpolatorFactory{
 
 	private static final Logger logger = LoggerFactory.getLogger(MessageInterpolatorFactory.class);
 
-	private final ValidatorFactory factory;
+	private final @Any ValidatorFactory factory;
 	
 	/** 
 	 * @deprecated CDI eyes only

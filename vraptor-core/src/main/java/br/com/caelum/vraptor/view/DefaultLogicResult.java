@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 import javax.enterprise.context.RequestScoped;
+import javax.enterprise.inject.Any;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 
@@ -59,7 +60,7 @@ public class DefaultLogicResult implements LogicResult {
 
 	private final Proxifier proxifier;
 	private final Router router;
-	private final MutableRequest request;
+	private final @Any MutableRequest request;
 	private final HttpServletResponse response;
 	private final Container container;
 	private final PathResolver resolver;

@@ -20,6 +20,7 @@ package br.com.caelum.vraptor.view;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
+import javax.enterprise.inject.Any;
 import javax.inject.Inject;
 import javax.servlet.ServletException;
 
@@ -46,7 +47,7 @@ public class DefaultPageResult implements PageResult {
 
 	private static final Logger logger = LoggerFactory.getLogger(DefaultPageResult.class);
 
-	private final MutableRequest request;
+	private final @Any MutableRequest request;
 	private final MutableResponse response;
 	private final PathResolver resolver;
 	private final Proxifier proxifier;
