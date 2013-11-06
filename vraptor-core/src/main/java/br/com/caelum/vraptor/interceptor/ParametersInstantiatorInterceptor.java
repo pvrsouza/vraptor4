@@ -99,7 +99,7 @@ public class ParametersInstantiatorInterceptor implements Interceptor {
 		logger.debug("Conversion errors: {}", errors);
 		logger.debug("Parameter values for {} are {}", method, values);
 
-		parameters.setParameters(values);
+		parameters.setParameterValues(values);
 		stack.next(method, controllerInstance);
 	}
 

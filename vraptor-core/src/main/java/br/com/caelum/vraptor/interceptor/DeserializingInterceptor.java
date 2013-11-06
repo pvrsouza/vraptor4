@@ -33,6 +33,7 @@ import br.com.caelum.vraptor.core.InterceptorStack;
 import br.com.caelum.vraptor.core.MethodInfo;
 import br.com.caelum.vraptor.deserialization.Deserializer;
 import br.com.caelum.vraptor.deserialization.Deserializers;
+import br.com.caelum.vraptor.http.ValuedParameter;
 import br.com.caelum.vraptor.ioc.Container;
 import br.com.caelum.vraptor.view.Status;
 
@@ -93,16 +94,13 @@ public class DeserializingInterceptor implements Interceptor {
 			}
 
 			Object[] deserialized = deserializer.deserialize(request.getInputStream(), method);
-			Object[] parameters = methodInfo.getParameters();
+			ValuedParameter[] parameters = methodInfo.getValuedParameters();
 
 			logger.debug("Deserialized parameters for {} are {} ", method, deserialized);
 
-			// TODO: a new array should be created and then a call to setParameters
-			// setting methodInfo.getParameters() works only because we dont (yet)
-			// return a defensive copy
 			for (int i = 0; i < deserialized.length; i++) {
 				if (deserialized[i] != null) {
-					parameters[i] = deserialized[i];
+					parameters[i].setValue(deserialized[i]);
 				}
 			}
 

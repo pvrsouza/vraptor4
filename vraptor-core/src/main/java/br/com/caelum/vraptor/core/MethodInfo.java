@@ -16,37 +16,75 @@
  */
 package br.com.caelum.vraptor.core;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import javax.enterprise.context.RequestScoped;
 
 import br.com.caelum.vraptor.controller.ControllerMethod;
+import br.com.caelum.vraptor.http.Parameter;
+import br.com.caelum.vraptor.http.ValuedParameter;
 
 /**
  * Holder for method being invoked and parameters being passed.
- *
+ * 
  * @author Guilherme Silveira
  * @author Fabio Kung
  */
 @RequestScoped
 public class MethodInfo {
 
-	private ControllerMethod controllerMethod;
-	private Object[] parameters;
+	private final ControllerMethod controllerMethod;
+	private ValuedParameter[] valuedParameters;
 	private Object result;
+	
+
+	public MethodInfo(ControllerMethod controllerMethod, Parameter[] parameters) {
+		this.controllerMethod = controllerMethod;
+
+		// FIXME to ugly
+		valuedParameters = new ValuedParameter[parameters.length];
+		for (int i = 0; i < parameters.length; i++)
+			valuedParameters[i] = new ValuedParameter(parameters[i], null);
+	}
 
 	public ControllerMethod getControllerMethod() {
 		return controllerMethod;
 	}
 
-	public void setControllerMethod(ControllerMethod controllerMethod) {
-		this.controllerMethod = controllerMethod;
+	public void setParameterValues(Object[] parameters) {
+		checkArgument(parameters.length == valuedParameters.length, "Parameter values must have length={}",
+				valuedParameters.length);
+		for (int i = 0; i < valuedParameters.length; i++) {
+			valuedParameters[i].setValue(parameters[i]);
+		}
 	}
 
-	public void setParameters(Object[] parameters) {
-		this.parameters = parameters;
-	}
+	public Object[] getParameterValues() {
+		Object[] parameters = new Object[valuedParameters.length];
 
-	public Object[] getParameters() {
+		for (int i = 0; i < valuedParameters.length; i++) {
+			parameters[i] = valuedParameters[i].getValue();
+		}
+
 		return parameters;
+	}
+
+	public Parameter[] getParameters() {
+		Parameter[] parameters = new Parameter[valuedParameters.length];
+
+		for (int i = 0; i < valuedParameters.length; i++) {
+			parameters[i] = valuedParameters[i].getParameter();
+		}
+
+		return parameters;
+	}
+
+	public void setValuedParameters(ValuedParameter[] valuedParameters) {
+		this.valuedParameters = valuedParameters;
+	}
+
+	public ValuedParameter[] getValuedParameters() {
+		return valuedParameters;
 	}
 
 	public Object getResult() {
@@ -55,9 +93,5 @@ public class MethodInfo {
 
 	public void setResult(Object result) {
 		this.result = result;
-	}
-
-	public boolean parametersWereSet() {
-		return parameters != null;
 	}
 }

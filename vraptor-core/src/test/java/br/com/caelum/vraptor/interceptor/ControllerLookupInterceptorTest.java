@@ -16,6 +16,11 @@
  */
 package br.com.caelum.vraptor.interceptor;
 
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.io.IOException;
 import java.util.EnumSet;
 
@@ -32,19 +37,12 @@ import br.com.caelum.vraptor.controller.ControllerNotFoundHandler;
 import br.com.caelum.vraptor.controller.HttpMethod;
 import br.com.caelum.vraptor.controller.MethodNotAllowedHandler;
 import br.com.caelum.vraptor.core.InterceptorStack;
-import br.com.caelum.vraptor.core.MethodInfo;
 import br.com.caelum.vraptor.core.RequestInfo;
 import br.com.caelum.vraptor.http.MutableRequest;
 import br.com.caelum.vraptor.http.MutableResponse;
 import br.com.caelum.vraptor.http.UrlToControllerTranslator;
 import br.com.caelum.vraptor.http.route.ControllerNotFoundException;
 import br.com.caelum.vraptor.http.route.MethodNotAllowedException;
-
-import static org.junit.Assert.assertTrue;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class ControllerLookupInterceptorTest {
 
@@ -53,7 +51,6 @@ public class ControllerLookupInterceptorTest {
 	private @Mock MutableResponse webResponse;
 	private @Mock RequestInfo info;
 	private ControllerLookupInterceptor lookup;
-	private @Mock MethodInfo methodInfo;
 	private @Mock ControllerNotFoundHandler notFoundHandler;
 	private @Mock MethodNotAllowedHandler methodNotAllowedHandler;
 	private @Mock Event<ControllerMethod> event;
@@ -62,7 +59,7 @@ public class ControllerLookupInterceptorTest {
 	public void config() {
 		MockitoAnnotations.initMocks(this);
 		info = new RequestInfo(null, null, webRequest, webResponse);
-		lookup = new ControllerLookupInterceptor(translator, methodInfo, notFoundHandler, methodNotAllowedHandler, info, event);
+		lookup = new ControllerLookupInterceptor(translator, notFoundHandler, methodNotAllowedHandler, info, event);
 	}
 	
 	@Test
@@ -97,6 +94,5 @@ public class ControllerLookupInterceptorTest {
 		
 		lookup.intercept(stack, null, null);
 		verify(stack).next(method, null);
-		verify(methodInfo).setControllerMethod(method);
 	}
 }

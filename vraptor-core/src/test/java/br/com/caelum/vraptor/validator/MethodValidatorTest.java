@@ -68,26 +68,24 @@ public class MethodValidatorTest {
 	
 	@Test
 	public void shouldAcceptIfMethodHasConstraint() {
-		interceptor = new MethodValidatorInterceptor(null, null, null, null, validatorFactory.getValidator(), null);
+		interceptor = new MethodValidatorInterceptor(null, null, null, null, validatorFactory.getValidator());
 		
 		assertThat(interceptor.accepts(withConstraint), is(true));
 	}
 
 	@Test
 	public void shouldNotAcceptIfMethodHasConstraint() {
-		interceptor = new MethodValidatorInterceptor(null, null, null, null, validatorFactory.getValidator(), null);
+		interceptor = new MethodValidatorInterceptor(null, null, null, null, validatorFactory.getValidator());
 		assertThat(interceptor.accepts(withoutConstraint), is(false));
 	}
 
 	@Test
 	public void shouldValidateMethodWithConstraint()
 		throws Exception {
-		MethodInfo info = new MethodInfo();
-		info.setParameters(new Object[] { null });
-		info.setControllerMethod(withConstraint);
+		MethodInfo info = new MethodInfo(withConstraint, provider.parametersFor(withConstraint.getMethod()));
 
 		interceptor = new MethodValidatorInterceptor(new Locale("pt", "br"), interpolator, validator, info, 
-				validatorFactory.getValidator(), provider);
+				validatorFactory.getValidator());
 
 		MyController controller = new MyController();
 		interceptor.intercept(stack, info.getControllerMethod(), controller);

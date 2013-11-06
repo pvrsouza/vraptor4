@@ -30,7 +30,6 @@ import br.com.caelum.vraptor.controller.ControllerMethod;
 import br.com.caelum.vraptor.controller.ControllerNotFoundHandler;
 import br.com.caelum.vraptor.controller.MethodNotAllowedHandler;
 import br.com.caelum.vraptor.core.InterceptorStack;
-import br.com.caelum.vraptor.core.MethodInfo;
 import br.com.caelum.vraptor.core.RequestInfo;
 import br.com.caelum.vraptor.http.UrlToControllerTranslator;
 import br.com.caelum.vraptor.http.route.ControllerNotFoundException;
@@ -50,7 +49,6 @@ public class ControllerLookupInterceptor implements Interceptor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ControllerLookupInterceptor.class);
 	
 	private final UrlToControllerTranslator translator;
-	private final MethodInfo methodInfo;
 	private final RequestInfo requestInfo;
 	private final ControllerNotFoundHandler controllerNotFoundHandler;
 	private final MethodNotAllowedHandler methodNotAllowedHandler;
@@ -62,15 +60,14 @@ public class ControllerLookupInterceptor implements Interceptor {
 	 * @deprecated CDI eyes only
 	 */
 	protected ControllerLookupInterceptor() {
-		this(null, null, null, null, null, null);
+		this(null, null, null, null, null);
 	}
 
 	@Inject
-	public ControllerLookupInterceptor(UrlToControllerTranslator translator, MethodInfo methodInfo,
+	public ControllerLookupInterceptor(UrlToControllerTranslator translator, 
 			ControllerNotFoundHandler controllerNotFoundHandler, MethodNotAllowedHandler methodNotAllowedHandler,
 			RequestInfo requestInfo, Event<ControllerMethod> event) {
 		this.translator = translator;
-		this.methodInfo = methodInfo;
 		this.methodNotAllowedHandler = methodNotAllowedHandler;
 		this.controllerNotFoundHandler = controllerNotFoundHandler;
 		this.requestInfo = requestInfo;
@@ -85,7 +82,6 @@ public class ControllerLookupInterceptor implements Interceptor {
 			method = translator.translate(requestInfo);
 			event.fire(method);
 
-			methodInfo.setControllerMethod(method);
 			stack.next(method, controllerInstance);
 		} catch (ControllerNotFoundException e) {
 			controllerNotFoundHandler.couldntFind(requestInfo);

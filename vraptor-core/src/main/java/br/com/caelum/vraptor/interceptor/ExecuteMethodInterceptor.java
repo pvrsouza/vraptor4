@@ -69,7 +69,7 @@ public class ExecuteMethodInterceptor implements Interceptor {
 			throws InterceptionException {
 		try {
 			Method reflectionMethod = method.getMethod();
-			Object[] parameters = this.info.getParameters();
+			Object[] parameters = this.info.getParameterValues();
 
 			log.debug("Invoking {}", Stringnifier.simpleNameFor(reflectionMethod));
 			Object result = methodExecutor.invoke(reflectionMethod, controllerInstance, parameters);

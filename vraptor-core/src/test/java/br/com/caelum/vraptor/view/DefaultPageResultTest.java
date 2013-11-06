@@ -40,6 +40,7 @@ import br.com.caelum.vraptor.controller.DefaultControllerMethod;
 import br.com.caelum.vraptor.core.MethodInfo;
 import br.com.caelum.vraptor.http.MutableRequest;
 import br.com.caelum.vraptor.http.MutableResponse;
+import br.com.caelum.vraptor.http.Parameter;
 import br.com.caelum.vraptor.interceptor.ApplicationLogicException;
 import br.com.caelum.vraptor.proxy.JavassistProxifier;
 import br.com.caelum.vraptor.proxy.Proxifier;
@@ -61,8 +62,8 @@ public class DefaultPageResultTest {
 		MockitoAnnotations.initMocks(this);
 		method = DefaultControllerMethod.instanceFor(AnyResource.class, AnyResource.class.getDeclaredMethods()[0]);
 		proxifier = new JavassistProxifier();
-		requestInfo = new MethodInfo();
-		requestInfo.setControllerMethod(method);
+		requestInfo = new MethodInfo(method, new Parameter[0]);
+		
 		fixedResolver = new PathResolver() {
 			@Override
 			public String pathFor(ControllerMethod method) {

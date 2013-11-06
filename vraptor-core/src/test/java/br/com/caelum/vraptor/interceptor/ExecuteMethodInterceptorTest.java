@@ -28,6 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Method;
 import java.util.Collections;
 
@@ -38,11 +39,18 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import br.com.caelum.vraptor.InterceptionException;
+import br.com.caelum.vraptor.cache.DefaultCacheStore;
+import br.com.caelum.vraptor.controller.BeanClass;
 import br.com.caelum.vraptor.controller.ControllerMethod;
+import br.com.caelum.vraptor.controller.DefaultBeanClass;
 import br.com.caelum.vraptor.controller.DefaultControllerMethod;
 import br.com.caelum.vraptor.core.InterceptorStack;
 import br.com.caelum.vraptor.core.MethodInfo;
 import br.com.caelum.vraptor.factory.Factories;
+import br.com.caelum.vraptor.http.Parameter;
+import br.com.caelum.vraptor.http.ParameterNameProvider;
+import br.com.caelum.vraptor.http.ParanamerNameProvider;
+import br.com.caelum.vraptor.http.ValuedParameter;
 import br.com.caelum.vraptor.reflection.MethodExecutor;
 import br.com.caelum.vraptor.validator.Message;
 import br.com.caelum.vraptor.validator.ValidationException;
@@ -55,11 +63,13 @@ public class ExecuteMethodInterceptorTest {
 	private @Mock Validator validator;
 	private MethodExecutor methodExecutor = Factories.createMethodExecutor();
 	private ExecuteMethodInterceptor interceptor;
+	private ParameterNameProvider nameProvider;
 
 	@Before
 	public void setup() throws NoSuchMethodException {
 		MockitoAnnotations.initMocks(this);
 		interceptor = new ExecuteMethodInterceptor(info, validator,methodExecutor);
+		nameProvider = new ParanamerNameProvider(new DefaultCacheStore<AccessibleObject, Parameter[]>());
 	}
 
 	@Test
@@ -72,7 +82,7 @@ public class ExecuteMethodInterceptorTest {
 			NoSuchMethodException, IOException, InterceptionException {
 		ControllerMethod method = new DefaultControllerMethod(null, DogAlike.class.getMethod("bark"));
 		DogAlike auau = mock(DogAlike.class);
-		when(info.getParameters()).thenReturn(new Object[0]);
+		when(info.getParameters()).thenReturn(new Parameter[0]);
 		
 		interceptor.intercept(stack, method, auau);
 		
@@ -89,7 +99,7 @@ public class ExecuteMethodInterceptorTest {
 		final RuntimeException exception = new RuntimeException();
 		
 		doThrow(exception).when(auau).bark();
-		when(info.getParameters()).thenReturn(new Object[0]);
+		when(info.getParameters()).thenReturn(new Parameter[0]);
 		
 		try {
 			interceptor.intercept(stack, method, auau);
@@ -102,10 +112,18 @@ public class ExecuteMethodInterceptorTest {
 	@Test
 	public void shouldUseTheProvidedArguments() throws SecurityException, NoSuchMethodException, InterceptionException,
 			IOException {
-		ControllerMethod method = new DefaultControllerMethod(null, DogAlike.class.getMethod("bark", int.class));
+		BeanClass controller = new DefaultBeanClass(DogAlike.class);
+		ControllerMethod method = new DefaultControllerMethod(controller, DogAlike.class.getMethod("bark", int.class));
 		DogAlike auau = mock(DogAlike.class);
+		
+		Parameter[] parameters = nameProvider.parametersFor(method.getMethod());
 
-		when(info.getParameters()).thenReturn(new Object[] { 3 });
+		when(info.getControllerMethod()).thenReturn(method);
+		when(info.getParameters()).thenReturn(parameters);
+		when(info.getParameterValues()).thenReturn(new Object[] { null, null, 3 });
+		when(info.getValuedParameters()).thenReturn(new ValuedParameter[] {
+				new ValuedParameter(parameters[0], 3)
+		});
 
 		interceptor.intercept(stack, method, auau);
 

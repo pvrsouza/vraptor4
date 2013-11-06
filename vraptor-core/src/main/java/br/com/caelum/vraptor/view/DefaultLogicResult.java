@@ -32,10 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import br.com.caelum.vraptor.Get;
-import br.com.caelum.vraptor.controller.ControllerMethod;
 import br.com.caelum.vraptor.controller.DefaultControllerMethod;
 import br.com.caelum.vraptor.controller.HttpMethod;
-import br.com.caelum.vraptor.core.MethodInfo;
 import br.com.caelum.vraptor.http.MutableRequest;
 import br.com.caelum.vraptor.http.route.Router;
 import br.com.caelum.vraptor.interceptor.TypeNameExtractor;
@@ -65,18 +63,17 @@ public class DefaultLogicResult implements LogicResult {
 	private final PathResolver resolver;
 	private final TypeNameExtractor extractor;
 	private final FlashScope flash;
-	private final MethodInfo methodInfo;
 
 	/** 
 	 * @deprecated CDI eyes only
 	 */
 	protected DefaultLogicResult() {
-		this(null, null, null, null, null, null, null, null, null);
+		this(null, null, null, null, null, null, null, null);
 	}
 
 	@Inject
 	public DefaultLogicResult(Proxifier proxifier, Router router, MutableRequest request, HttpServletResponse response,
-			Container container, PathResolver resolver, TypeNameExtractor extractor, FlashScope flash, MethodInfo methodInfo) {
+			Container container, PathResolver resolver, TypeNameExtractor extractor, FlashScope flash) {
 		this.proxifier = proxifier;
 		this.response = response;
 		this.request = request;
@@ -85,7 +82,6 @@ public class DefaultLogicResult implements LogicResult {
 		this.resolver = resolver;
 		this.extractor = extractor;
 		this.flash = flash;
-		this.methodInfo = methodInfo;
 	}
 
 	/**
@@ -100,11 +96,8 @@ public class DefaultLogicResult implements LogicResult {
 			public Object intercept(T proxy, Method method, Object[] args, SuperMethod superMethod) {
 				try {
 					logger.debug("Executing {}", Stringnifier.simpleNameFor(method));
-					ControllerMethod old = methodInfo.getControllerMethod();
-					methodInfo.setControllerMethod(DefaultControllerMethod.instanceFor(type, method));
 					Object result = method.invoke(container.instanceFor(type), args);
-					methodInfo.setControllerMethod(old);
-
+					
 					Type returnType = method.getGenericReturnType();
 					if (!(returnType == void.class)) {
 						request.setAttribute(extractor.nameFor(returnType), result);

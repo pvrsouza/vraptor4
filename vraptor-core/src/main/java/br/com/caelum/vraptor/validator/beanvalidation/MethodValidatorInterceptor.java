@@ -37,7 +37,6 @@ import br.com.caelum.vraptor.controller.ControllerMethod;
 import br.com.caelum.vraptor.core.InterceptorStack;
 import br.com.caelum.vraptor.core.MethodInfo;
 import br.com.caelum.vraptor.http.Parameter;
-import br.com.caelum.vraptor.http.ParameterNameProvider;
 import br.com.caelum.vraptor.interceptor.ExecuteMethodInterceptor;
 import br.com.caelum.vraptor.interceptor.Interceptor;
 import br.com.caelum.vraptor.interceptor.ParametersInstantiatorInterceptor;
@@ -63,25 +62,23 @@ public class MethodValidatorInterceptor implements Interceptor {
 	private final MessageInterpolator interpolator;
 	private final MethodInfo methodInfo;
 	private final Validator validator;
-	private final ParameterNameProvider parameterNameProvider;
 	private final javax.validation.Validator bvalidator;
 
 	/** 
 	 * @deprecated CDI eyes only
 	 */
 	protected MethodValidatorInterceptor() {
-		this(null, null, null, null, null, null);
+		this(null, null, null, null, null);
 	}
 
 	@Inject
 	public MethodValidatorInterceptor(Locale locale, MessageInterpolator interpolator, Validator validator,
-			MethodInfo methodInfo, javax.validation.Validator bvalidator, ParameterNameProvider parameterNameProvider) {
+			MethodInfo methodInfo, javax.validation.Validator bvalidator) {
 		this.locale = locale;
 		this.interpolator = interpolator;
 		this.validator = validator;
 		this.methodInfo = methodInfo;
 		this.bvalidator = bvalidator;
-		this.parameterNameProvider = parameterNameProvider;
 	}
 
 	/**
@@ -106,10 +103,10 @@ public class MethodValidatorInterceptor implements Interceptor {
 			throws InterceptionException {
 
 		Set<ConstraintViolation<Object>> violations = bvalidator.forExecutables()
-				.validateParameters(controllerInstance, method.getMethod(), methodInfo.getParameters());
+				.validateParameters(controllerInstance, method.getMethod(), methodInfo.getParameterValues());
 		logger.debug("there are {} violations at method {}.", violations.size(), method);
 
-		Parameter[] params = violations.isEmpty() ? new Parameter[0] : parameterNameProvider.parametersFor(method.getMethod());
+		Parameter[] params = methodInfo.getParameters();
 
 		for (ConstraintViolation<Object> v : violations) {
 			BeanValidatorContext ctx = new BeanValidatorContext(v);

@@ -60,7 +60,7 @@ import br.com.caelum.vraptor.view.FlashScope;
 
 public class ParametersInstantiatorInterceptorTest {
 
-	private @Mock MethodInfo params;
+	private @Mock MethodInfo methodInfo;
 	private @Mock ParametersProvider parametersProvider;
 	private ParameterNameProvider parameterNameProvider;
 	private @Mock Validator validator;
@@ -83,7 +83,7 @@ public class ParametersInstantiatorInterceptorTest {
 		MockitoAnnotations.initMocks(this);
 		when(request.getParameterNames()).thenReturn(Collections.<String> emptyEnumeration());
 
-		this.instantiator = new ParametersInstantiatorInterceptor(parametersProvider, parameterNameProvider, params, validator, request, flash);
+		this.instantiator = new ParametersInstantiatorInterceptor(parametersProvider, parameterNameProvider, methodInfo, validator, request, flash);
 
 		this.errors = (List<Message>) new Mirror().on(instantiator).get().field("errors");
 		this.method = DefaultControllerMethod.instanceFor(Component.class, Component.class.getDeclaredMethod("method"));
@@ -121,7 +121,7 @@ public class ParametersInstantiatorInterceptorTest {
 
 		instantiator.intercept(stack, method, null);
 
-		verify(params).setParameters(values);
+		verify(methodInfo).setParameterValues(values);
 		verify(stack).next(method, null);
 		verify(validator).addAll(Collections.<Message>emptyList());
 	}
@@ -160,7 +160,7 @@ public class ParametersInstantiatorInterceptorTest {
 
 		instantiator.intercept(stack, method, null);
 
-		verify(params).setParameters(values);
+		verify(methodInfo).setParameterValues(values);
 		verify(stack).next(method, null);
 		verify(validator).addAll(Collections.<Message>emptyList());
 		verify(parametersProvider, never()).getParametersFor(method, errors);
@@ -175,7 +175,7 @@ public class ParametersInstantiatorInterceptorTest {
 
 		verify(validator).addAll(errors);
 		verify(stack).next(otherMethod, null);
-		verify(params).setParameters(values);
+		verify(methodInfo).setParameterValues(values);
 	}
 
 	@Test
@@ -190,7 +190,7 @@ public class ParametersInstantiatorInterceptorTest {
 		instantiator.intercept(stack, controllerMethod, null);
 		
 		verify(request).setParameter("password", "123");
-		verify(params).setParameters(values);
+		verify(methodInfo).setParameterValues(values);
 		verify(stack).next(controllerMethod, null);
 		verify(validator).addAll(Collections.<Message>emptyList());
 	}
@@ -206,7 +206,7 @@ public class ParametersInstantiatorInterceptorTest {
 		instantiator.intercept(stack, controllerMethod, null);
 		
 		verify(request, never()).setParameter(anyString(), anyString());
-		verify(params).setParameters(values);
+		verify(methodInfo).setParameterValues(values);
 		verify(stack).next(controllerMethod, null);
 		verify(validator).addAll(Collections.<Message>emptyList());
 	}
@@ -227,7 +227,7 @@ public class ParametersInstantiatorInterceptorTest {
 		verify(request).setParameter("user", "user");
 		verify(request).setParameter("password", "123");
 		verify(request).setParameter("token", "daek2321");
-		verify(params).setParameters(values);
+		verify(methodInfo).setParameterValues(values);
 		verify(stack).next(resouceMethod, null);
 		verify(validator).addAll(Collections.<Message>emptyList());
 	}

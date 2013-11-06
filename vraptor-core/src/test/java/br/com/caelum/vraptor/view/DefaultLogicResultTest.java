@@ -51,6 +51,7 @@ import br.com.caelum.vraptor.controller.DefaultControllerMethod;
 import br.com.caelum.vraptor.core.MethodInfo;
 import br.com.caelum.vraptor.http.MutableRequest;
 import br.com.caelum.vraptor.http.MutableResponse;
+import br.com.caelum.vraptor.http.Parameter;
 import br.com.caelum.vraptor.http.route.Router;
 import br.com.caelum.vraptor.interceptor.TypeNameExtractor;
 import br.com.caelum.vraptor.ioc.Container;
@@ -73,8 +74,6 @@ public class DefaultLogicResultTest {
 	private @Mock FlashScope flash;
 
 	private Proxifier proxifier;
-
-	private MethodInfo methodInfo;
 
 	public static class MyComponent {
 		int calls = 0;
@@ -111,9 +110,7 @@ public class DefaultLogicResultTest {
 		MockitoAnnotations.initMocks(this);
 
 		proxifier = new JavassistProxifier();
-		methodInfo = new MethodInfo();
-		this.logicResult = new DefaultLogicResult(proxifier, router, request, response, container,
-				resolver, extractor, flash, methodInfo);
+		logicResult = new DefaultLogicResult(proxifier, router, request, response, container, resolver, extractor, flash);
 	}
 
 	@Test
@@ -248,6 +245,10 @@ public class DefaultLogicResultTest {
 	 */
 	@Test
 	public void shouldForwardToTheRightDefaultValue() throws Exception {
+		ControllerMethod controllerMethod = DefaultControllerMethod.instanceFor(TheComponent.class, 
+				TheComponent.class.getDeclaredMethod("method"));
+		MethodInfo methodInfo = new MethodInfo(controllerMethod, new Parameter[0]);
+		
 		Result result = mock(Result.class);
 		PageResult pageResult = new DefaultPageResult(request, response, methodInfo, resolver, proxifier);
 		when(result.use(PageResult.class)).thenReturn(pageResult);
@@ -256,7 +257,7 @@ public class DefaultLogicResultTest {
 		when(request.getRequestDispatcher(anyString())).thenThrow(new AssertionError("should have called with the right method!"));
 		doReturn(dispatcher).when(request).getRequestDispatcher("controlled!");
 		
-		methodInfo.setControllerMethod(DefaultControllerMethod.instanceFor(MyComponent.class, MyComponent.class.getDeclaredMethod("base")));
+		//methodInfo.setControllerMethod(DefaultControllerMethod.instanceFor(MyComponent.class, MyComponent.class.getDeclaredMethod("base")));
 		
 		logicResult.forwardTo(TheComponent.class).method();
 	}
