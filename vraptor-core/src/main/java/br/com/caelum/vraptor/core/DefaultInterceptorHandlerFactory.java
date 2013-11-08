@@ -18,14 +18,15 @@ package br.com.caelum.vraptor.core;
 import java.util.concurrent.Callable;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 
 import br.com.caelum.vraptor.Intercepts;
 import br.com.caelum.vraptor.cache.CacheStore;
 import br.com.caelum.vraptor.interceptor.AspectStyleInterceptorHandler;
+import br.com.caelum.vraptor.interceptor.CustomAcceptsExecutor;
 import br.com.caelum.vraptor.interceptor.Interceptor;
-import br.com.caelum.vraptor.interceptor.InterceptorMethodParametersResolver;
+import br.com.caelum.vraptor.interceptor.InterceptorAcceptsExecutor;
+import br.com.caelum.vraptor.interceptor.InterceptorExecutor;
 import br.com.caelum.vraptor.interceptor.StepInvoker;
 import br.com.caelum.vraptor.ioc.Container;
 
@@ -35,31 +36,33 @@ import br.com.caelum.vraptor.ioc.Container;
  * @since 3.2.0
  */
 @ApplicationScoped
-@Default
 public class DefaultInterceptorHandlerFactory implements InterceptorHandlerFactory {
 
-	private Container container;
+	private final Container container;
+	private final CacheStore<Class<?>, InterceptorHandler> cachedHandlers;
+	private final StepInvoker stepInvoker;
+	private InterceptorAcceptsExecutor acceptsExecutor;
+	private CustomAcceptsExecutor customAcceptsExecutor;
+	private InterceptorExecutor interceptorExecutor;
 
-	private CacheStore<Class<?>, InterceptorHandler> cachedHandlers;
-
-	private StepInvoker stepInvoker;
-
-	private InterceptorMethodParametersResolver parametersResolver;
-
-	//CDI eyes only
-	@Deprecated
-	public DefaultInterceptorHandlerFactory() {
+	/**
+	 * @deprecated CDI eyes only
+	 */
+	protected DefaultInterceptorHandlerFactory() {
+		this(null, null, null, null, null, null);
 	}
 
 	@Inject
-	public DefaultInterceptorHandlerFactory(Container container, StepInvoker
-			stepInvoker, InterceptorMethodParametersResolver parametersResolver,
-			CacheStore<Class<?>,InterceptorHandler> cachedHandlers) {
+	public DefaultInterceptorHandlerFactory(Container container, StepInvoker stepInvoker,
+			CacheStore<Class<?>, InterceptorHandler> cachedHandlers, InterceptorAcceptsExecutor acceptsExecutor,
+			CustomAcceptsExecutor customAcceptsExecutor, InterceptorExecutor interceptorExecutor) {
 
 		this.container = container;
 		this.stepInvoker = stepInvoker;
-		this.parametersResolver = parametersResolver;
 		this.cachedHandlers = cachedHandlers;
+		this.acceptsExecutor = acceptsExecutor;
+		this.customAcceptsExecutor = customAcceptsExecutor;
+		this.interceptorExecutor = interceptorExecutor;
 	}
 
 	@Override
@@ -68,7 +71,8 @@ public class DefaultInterceptorHandlerFactory implements InterceptorHandlerFacto
 			@Override
 			public InterceptorHandler call() throws Exception {
 				if(type.isAnnotationPresent(Intercepts.class) && !Interceptor.class.isAssignableFrom(type)){
-					return new AspectStyleInterceptorHandler(type, stepInvoker, container, parametersResolver);
+					return new AspectStyleInterceptorHandler(type, stepInvoker, container, customAcceptsExecutor,
+							acceptsExecutor, interceptorExecutor);
 				}
 				return new ToInstantiateInterceptorHandler(container, type);
 			}

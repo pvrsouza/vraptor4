@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import br.com.caelum.vraptor.Intercepts;
-import br.com.caelum.vraptor.Validator;
 import br.com.caelum.vraptor.controller.ControllerMethod;
 import br.com.caelum.vraptor.core.InterceptorStack;
 import br.com.caelum.vraptor.http.InvalidParameterException;
@@ -43,6 +42,7 @@ import br.com.caelum.vraptor.http.MutableRequest;
 import br.com.caelum.vraptor.interceptor.Interceptor;
 import br.com.caelum.vraptor.interceptor.ParametersInstantiatorInterceptor;
 import br.com.caelum.vraptor.validator.I18nMessage;
+import br.com.caelum.vraptor.validator.Validator;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultiset;
@@ -63,16 +63,18 @@ public class CommonsUploadMultipartInterceptor implements Interceptor {
 
 	private static final Logger logger = LoggerFactory.getLogger(CommonsUploadMultipartInterceptor.class);
 
-	private MutableRequest request;
-	private MultipartConfig config;
-	private Validator validator;
+	private final MutableRequest request;
+	private final MultipartConfig config;
+	private final Validator validator;
 
 	private Multiset<String> indexes;
 	private Multimap<String, String> params;
 
-	//CDI eyes only
-	@Deprecated
-	public CommonsUploadMultipartInterceptor() {
+	/** 
+	 * @deprecated CDI eyes only
+	 */
+	protected CommonsUploadMultipartInterceptor() {
+		this(null, null, null);
 	}
 
 	@Inject

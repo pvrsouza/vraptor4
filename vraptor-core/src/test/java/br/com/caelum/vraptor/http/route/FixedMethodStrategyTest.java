@@ -39,9 +39,8 @@ import br.com.caelum.vraptor.controller.ControllerMethod;
 import br.com.caelum.vraptor.controller.DefaultControllerMethod;
 import br.com.caelum.vraptor.controller.HttpMethod;
 import br.com.caelum.vraptor.http.MutableRequest;
+import br.com.caelum.vraptor.http.Parameter;
 import br.com.caelum.vraptor.interceptor.VRaptorMatchers;
-import br.com.caelum.vraptor.proxy.JavassistProxifier;
-import br.com.caelum.vraptor.proxy.Proxifier;
 
 import com.google.common.collect.Sets;
 
@@ -50,7 +49,6 @@ public class FixedMethodStrategyTest {
 	private @Mock MutableRequest request;
 	private @Mock ParametersControl control;
 	private ControllerMethod list;
-	private Proxifier proxifier;
 	private EnumSet<HttpMethod> get;
 	private EnumSet<HttpMethod> post;
 
@@ -60,13 +58,11 @@ public class FixedMethodStrategyTest {
 		list = DefaultControllerMethod.instanceFor(MyControl.class, method("list"));
 		get = EnumSet.of(HttpMethod.GET);
 		post = EnumSet.of(HttpMethod.POST);
-		proxifier = new JavassistProxifier();
 	}
 
 	@Test
 	public void canTranslate() {
-		FixedMethodStrategy strategy = new FixedMethodStrategy("abc", list,
-				methods(HttpMethod.POST), control, 0, new String[] {});
+		FixedMethodStrategy strategy = new FixedMethodStrategy("abc", list, methods(HttpMethod.POST), control, 0, new Parameter[0]);
 		when(control.matches("/clients/add")).thenReturn(true);
 		ControllerMethod match = strategy.controllerMethod(request, "/clients/add");
 		assertThat(match, is(VRaptorMatchers.controllerMethod(method("list"))));
@@ -75,10 +71,10 @@ public class FixedMethodStrategyTest {
 
 	@Test
 	public void areEquals() throws Exception {
-		FixedMethodStrategy first = new FixedMethodStrategy("/uri", list, get, control, 0, new String[0]);
-		FixedMethodStrategy second = new FixedMethodStrategy("/uri", list, get, control, 2, new String[0]);
-		FixedMethodStrategy third = new FixedMethodStrategy("/different", list, get, control, 2, new String[0]);
-		FixedMethodStrategy forth = new FixedMethodStrategy("/uri", list, post, control, 2, new String[0]);
+		FixedMethodStrategy first = new FixedMethodStrategy("/uri", list, get, control, 0, new Parameter[0]);
+		FixedMethodStrategy second = new FixedMethodStrategy("/uri", list, get, control, 2, new Parameter[0]);
+		FixedMethodStrategy third = new FixedMethodStrategy("/different", list, get, control, 2, new Parameter[0]);
+		FixedMethodStrategy forth = new FixedMethodStrategy("/uri", list, post, control, 2, new Parameter[0]);
 
 		assertThat(first, equalTo(second));
 		assertThat(first, not(equalTo(third)));

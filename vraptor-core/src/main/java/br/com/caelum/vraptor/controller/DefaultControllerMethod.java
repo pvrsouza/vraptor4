@@ -17,10 +17,9 @@
 
 package br.com.caelum.vraptor.controller;
 
-import static com.google.common.base.Objects.equal;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 import br.com.caelum.vraptor.util.Stringnifier;
 
@@ -65,26 +64,18 @@ public class DefaultControllerMethod implements ControllerMethod {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((method == null) ? 0 : method.hashCode());
-		result = prime * result + ((controller == null) ? 0 : controller.hashCode());
-		return result;
+		return Objects.hash(method, controller);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (obj == null) {
+		if (obj == null || getClass() != obj.getClass())
 			return false;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
+		
 		DefaultControllerMethod other = (DefaultControllerMethod) obj;
-		return equal(method, other.method) && equal(controller, other.controller);
+		return Objects.equals(method, other.method) && Objects.equals(controller, other.controller);
 	}
 
 }

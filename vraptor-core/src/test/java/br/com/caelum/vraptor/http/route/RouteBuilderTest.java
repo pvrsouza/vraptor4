@@ -20,9 +20,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
 
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 
@@ -32,18 +31,21 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import br.com.caelum.vraptor.cache.DefaultCacheStore;
 import br.com.caelum.vraptor.controller.ControllerMethod;
 import br.com.caelum.vraptor.controller.DefaultBeanClass;
 import br.com.caelum.vraptor.controller.DefaultControllerMethod;
 import br.com.caelum.vraptor.core.Converters;
 import br.com.caelum.vraptor.http.EncodingHandler;
+import br.com.caelum.vraptor.http.Parameter;
 import br.com.caelum.vraptor.http.ParameterNameProvider;
+import br.com.caelum.vraptor.http.ParanamerNameProvider;
 import br.com.caelum.vraptor.proxy.JavassistProxifier;
 import br.com.caelum.vraptor.proxy.Proxifier;
 
 public class RouteBuilderTest {
 
-	private @Mock ParameterNameProvider provider;
+	private ParameterNameProvider provider;
 	private @Mock Converters converters;
 	private RouteBuilder builder;
 	private ControllerMethod method;
@@ -62,13 +64,12 @@ public class RouteBuilderTest {
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 
-		when(provider.parameterNamesFor(any(Method.class))).thenReturn(new String[] { "abc", "def", "ghi" });
-
+		provider = new ParanamerNameProvider(new DefaultCacheStore<AccessibleObject, Parameter[]>());
+		
 		method = new DefaultControllerMethod(new DefaultBeanClass(MyResource.class), MyResource.class.getMethod(
 				"method", String.class, Integer.class, BigDecimal.class));
 
 		proxifier = new JavassistProxifier();
-
 		typeFinder = new DefaultTypeFinder(provider);
 	}
 
@@ -200,7 +201,7 @@ public class RouteBuilderTest {
 
 		Method method = AbcResource.class.getDeclaredMethods()[0];
 		builder.is(AbcResource.class, method);
-
+		
 		Route route = builder.build();
 
 		assertTrue(route.canHandle("/my/troublesome/uri"));

@@ -28,6 +28,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Method;
 import java.util.EnumSet;
 import java.util.List;
@@ -48,11 +49,11 @@ import br.com.caelum.vraptor.controller.DefaultBeanClass;
 import br.com.caelum.vraptor.controller.DefaultControllerMethod;
 import br.com.caelum.vraptor.controller.HttpMethod;
 import br.com.caelum.vraptor.core.Converters;
-import br.com.caelum.vraptor.http.DefaultParameterNameProvider;
 import br.com.caelum.vraptor.http.EncodingHandler;
+import br.com.caelum.vraptor.http.Parameter;
 import br.com.caelum.vraptor.http.ParameterNameProvider;
+import br.com.caelum.vraptor.http.ParanamerNameProvider;
 import br.com.caelum.vraptor.http.VRaptorRequest;
-import br.com.caelum.vraptor.interceptor.DefaultTypeNameExtractor;
 import br.com.caelum.vraptor.interceptor.VRaptorMatchers;
 import br.com.caelum.vraptor.proxy.JavassistProxifier;
 import br.com.caelum.vraptor.proxy.Proxifier;
@@ -79,10 +80,10 @@ public class DefaultRouterTest {
 		this.method = mock(ControllerMethod.class);
 		this.converters = mock(Converters.class);
 		this.encodingHandler = mock(EncodingHandler.class);
-		this.nameProvider = new DefaultParameterNameProvider(new DefaultTypeNameExtractor());
+		this.nameProvider = new ParanamerNameProvider(new DefaultCacheStore<AccessibleObject, Parameter[]>());
 		this.cache = new DefaultCacheStore<>();
 
-		router = new DefaultRouter(new NoRoutesConfiguration(), proxifier, new NoTypeFinder(), converters, nameProvider, new JavaEvaluator(), encodingHandler,cache);
+		router = new DefaultRouter(proxifier, new NoTypeFinder(), converters, nameProvider, new JavaEvaluator(), encodingHandler,cache);
 	}
 
 	@Test

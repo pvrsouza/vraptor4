@@ -1,6 +1,7 @@
 package br.com.caelum.vraptor.core;
 
 import java.lang.annotation.Annotation;
+import java.util.Objects;
 
 public class StereotypeInfo {
 
@@ -8,10 +9,8 @@ public class StereotypeInfo {
 	private final Class<?> stereotypeClass;
 	private final Annotation stereotypeQualifier;
 
-	public StereotypeInfo(Class<? extends Annotation> stereotype,
-			Class<?> stereotypeClass,
-			Annotation stereotypeQualifier) {
-		super();
+	public StereotypeInfo(Class<? extends Annotation> stereotype, 
+			Class<?> stereotypeClass, Annotation stereotypeQualifier) {
 		this.stereotype = stereotype;
 		this.stereotypeClass = stereotypeClass;
 		this.stereotypeQualifier = stereotypeQualifier;
@@ -31,30 +30,17 @@ public class StereotypeInfo {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((stereotype == null) ? 0 : stereotype.hashCode());
-		return result;
+		return Objects.hash(stereotype);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (obj == null || getClass() != obj.getClass())
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
+		
 		StereotypeInfo other = (StereotypeInfo) obj;
-		if (stereotype == null) {
-			if (other.stereotype != null)
-				return false;
-		} else if (!stereotype.equals(other.stereotype))
-			return false;
-		return true;
+		return Objects.equals(stereotype, other.stereotype);
 	}
-	
-	
-
 }

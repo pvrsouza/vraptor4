@@ -3,7 +3,7 @@
 
 	<groupId>br.com.caelum</groupId>
 	<artifactId>vraptor-parent</artifactId>
-	<version>4.0.0-beta-2-SNAPSHOT</version>
+	<version>4.0.0-beta-4-SNAPSHOT</version>
 	<name>VRaptor4</name>
 	<packaging>pom</packaging>
 
@@ -95,8 +95,8 @@
 	
 	<modules>
 		<module>vraptor-core</module>
-		<!--module>vraptor-musicjungle</module-->
-		<!--module>vraptor-blank-project</module-->
+		<module>vraptor-musicjungle</module>
+		<module>vraptor-blank-project</module>
 	</modules>
 	
 	<properties>
@@ -107,38 +107,14 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<version>2.1.2</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.7</version>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.1</version>
+				<version>3.1</version>
 				<configuration>
 					<source>1.7</source>
 					<target>1.7</target>
 				</configuration>
 			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>

@@ -3,7 +3,6 @@
  */
 package br.com.caelum.vraptor.validator.beanvalidation;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -25,12 +24,13 @@ public class MessageInterpolatorFactory{
 
 	private static final Logger logger = LoggerFactory.getLogger(MessageInterpolatorFactory.class);
 
-	private ValidatorFactory factory;
-	private MessageInterpolator interpolator;
+	private final ValidatorFactory factory;
 	
-	//CDI eyes only
-	@Deprecated
-	public MessageInterpolatorFactory() {
+	/** 
+	 * @deprecated CDI eyes only
+	 */
+	protected MessageInterpolatorFactory() {
+		this(null);
 	}
 
 	@Inject
@@ -38,15 +38,10 @@ public class MessageInterpolatorFactory{
 		this.factory = factory;
 	}
 	
-	@PostConstruct
-	public void createInterpolator() {
-		interpolator = factory.getMessageInterpolator();
-		logger.debug("Initializing Bean Validator MessageInterpolator");
-	}
-
-	@Produces @javax.enterprise.context.ApplicationScoped
+	@Produces
+	@ApplicationScoped
 	public MessageInterpolator getInstance() {
-		return interpolator;
+		logger.debug("Initializing Bean Validator MessageInterpolator");
+		return factory.getMessageInterpolator();
 	}
-
 }

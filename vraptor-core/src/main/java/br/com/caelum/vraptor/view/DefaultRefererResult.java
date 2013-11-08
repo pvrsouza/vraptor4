@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 
-import com.google.common.base.Preconditions;
-
 import net.vidageek.mirror.dsl.Mirror;
 import br.com.caelum.vraptor.Result;
 import br.com.caelum.vraptor.controller.ControllerMethod;
@@ -42,17 +40,20 @@ import br.com.caelum.vraptor.validator.Message;
 @RequestScoped
 public class DefaultRefererResult implements RefererResult {
 
-	private MutableRequest request;
-	private Result result;
-	private Router router;
-	private ParametersProvider provider;
+	private final MutableRequest request;
+	private final Result result;
+	private final Router router;
+	private final ParametersProvider provider;
 
-	@Deprecated// CDI eyes only
-	public DefaultRefererResult() {}
+	/** 
+	 * @deprecated CDI eyes only
+	 */
+	protected DefaultRefererResult() {
+		this(null, null, null, null);
+	}
 
 	@Inject
-	public DefaultRefererResult(Result result, MutableRequest request, Router router,
-				ParametersProvider provider) {
+	public DefaultRefererResult(Result result, MutableRequest request, Router router, ParametersProvider provider) {
 		this.result = result;
 		this.request = request;
 		this.router = router;
@@ -66,9 +67,7 @@ public class DefaultRefererResult implements RefererResult {
 		try {
 			ControllerMethod method = router.parse(referer, HttpMethod.GET, request);
 			executeMethod(method, result.use(logic()).forwardTo(method.getController().getType()));
-		} catch (ControllerNotFoundException e) {
-			result.use(page()).forwardTo(referer);
-		} catch (MethodNotAllowedException e) {
+		} catch (ControllerNotFoundException | MethodNotAllowedException e) {
 			result.use(page()).forwardTo(referer);
 		}
 	}
@@ -84,9 +83,7 @@ public class DefaultRefererResult implements RefererResult {
 		try {
 			ControllerMethod method = router.parse(referer, HttpMethod.GET, request);
 			executeMethod(method, result.use(logic()).redirectTo(method.getController().getType()));
-		} catch (ControllerNotFoundException e) {
-			result.use(page()).redirectTo(referer);
-		} catch (MethodNotAllowedException e) {
+		} catch (ControllerNotFoundException | MethodNotAllowedException e) {
 			result.use(page()).redirectTo(referer);
 		}
 	}

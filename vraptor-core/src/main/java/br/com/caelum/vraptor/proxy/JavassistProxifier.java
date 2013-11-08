@@ -39,6 +39,19 @@ public class JavassistProxifier implements Proxifier {
 
 	private static final Logger logger = LoggerFactory.getLogger(JavassistProxifier.class);
 
+	private static final Class<?> weldProxyClass;
+	
+	static {
+		Class<?> temp;
+		try {
+			temp = Class.forName("org.jboss.weld.bean.proxy.ProxyObject");
+		} catch (ClassNotFoundException e) {
+			logger.debug("Weld is not present, so we can't determine if classes is a weld proxy");
+			temp = null;
+		}
+		weldProxyClass = temp;
+	}
+	
 	/**
 	 * Do not proxy these methods.
 	 */
@@ -61,16 +74,19 @@ public class JavassistProxifier implements Proxifier {
 			factory.setSuperclass(rawType);
 		}
 
-		Object instance;
+		Object instance = createInstance(type, handler, factory);
+		logger.debug("a proxy for {} was created as {}", type, instance.getClass());
+
+		return type.cast(instance);
+	}
+
+	private <T> Object createInstance(Class<T> type, MethodInvocation<? super T> handler, ProxyFactory factory) {
 		try {
-			instance = factory.create(null, null, new MethodInvocationAdapter<T>(handler));
+			return factory.create(null, null, new MethodInvocationAdapter<>(handler));
 		} catch (ReflectiveOperationException | IllegalArgumentException e) {
 			logger.error("An error occurs when create a proxy for type " + type, e);
 			throw new ProxyCreationException(e);
 		}
-
-		logger.debug("a proxy for {} was created as {}", type, instance.getClass());
-		return type.cast(instance);
 	}
 
 	private <T> Class<?> extractRawType(Class<T> type) {
@@ -90,9 +106,8 @@ public class JavassistProxifier implements Proxifier {
 		return proxy;
 	}
 
-	// FIXME only works with weld, and can throws ClassNotFoundException in another CDI implementations
 	private boolean isWeldProxy(Class<?> type) {
-		return org.jboss.weld.bean.proxy.ProxyFactory.isProxy(type);
+		return weldProxyClass != null && weldProxyClass.isAssignableFrom(type);
 	}
 
 	private static class MethodInvocationAdapter<T> implements MethodHandler {

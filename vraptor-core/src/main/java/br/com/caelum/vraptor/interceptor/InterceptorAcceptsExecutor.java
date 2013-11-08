@@ -1,51 +1,39 @@
 package br.com.caelum.vraptor.interceptor;
 
+import static com.google.common.base.Objects.firstNonNull;
+
 import java.lang.reflect.Method;
 
-import javax.enterprise.inject.Vetoed;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
-import br.com.caelum.vraptor.VRaptorException;
+@ApplicationScoped
+public class InterceptorAcceptsExecutor {
 
-import com.google.common.base.Objects;
+	private final InterceptorMethodParametersResolver parameterResolver;
+	private final StepInvoker invoker;
 
-@Vetoed
-public class InterceptorAcceptsExecutor implements StepExecutor<Boolean>{
+	/**
+	 * @deprecated CDI eyes only
+	 */
+	protected InterceptorAcceptsExecutor() {
+		this(null, null);
+	}
 
-	private StepInvoker stepInvoker;
-	private InterceptorMethodParametersResolver parameterResolver;
-	private Method method;
+	@Inject
+	public InterceptorAcceptsExecutor(
+			InterceptorMethodParametersResolver parameterResolver,
+			StepInvoker invoker) {
 
-	public InterceptorAcceptsExecutor(StepInvoker stepInvoker, InterceptorMethodParametersResolver parameterResolver,
-			Method method, Class<?> interceptorClass) {
-		this.stepInvoker = stepInvoker;
 		this.parameterResolver = parameterResolver;
-		this.method = method;
+		this.invoker = invoker;
 	}
 
-	@Override
-	public boolean accept(Class<?> interceptorClass) {
-		if (method == null) {
-			return false;
-		}
-
-		if(!method.getReturnType().equals(Boolean.class) && !method.getReturnType().equals(boolean.class)) {
-			throw new VRaptorException("@Accepts method must return boolean");
-		}
-
-		SignatureAcceptor acceptor = new NoStackParameterSignatureAcceptor();
-		if (!acceptor.accepts(method)) {
-			throw new VRaptorException(method.getDeclaringClass().getCanonicalName() + " - " + acceptor.errorMessage());
-		}
-
-		return true;
-	}
-
-	@Override
-	public Boolean execute(Object interceptor) {
+	public Boolean accepts(Object interceptor, Method method) {
 		if(method != null) {
 			Object[] params = parameterResolver.parametersFor(method);
-			Object returnObject = stepInvoker.tryToInvoke(interceptor, method, params);
-			return Objects.firstNonNull((Boolean) returnObject, false);
+			Object returnObject = invoker.tryToInvoke(interceptor, method, params);
+			return firstNonNull((Boolean) returnObject, false);
 		}
 		return true;
 	}

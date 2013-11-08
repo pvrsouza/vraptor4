@@ -43,7 +43,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Set;
 
@@ -61,7 +60,10 @@ public class IogiParametersProviderTest extends ParametersProviderTest {
 
 	@Override
 	protected ParametersProvider getProvider() {
-		return new IogiParametersProvider(nameProvider, request, new VRaptorInstantiator(converters, new VRaptorDependencyProvider(container), new VRaptorParameterNamesProvider(nameProvider), request));
+		VRaptorInstantiator instantiator = new VRaptorInstantiator(converters, new VRaptorDependencyProvider(container), new VRaptorParameterNamesProvider(nameProvider), request);
+		instantiator.createInstantiator();
+		
+		return new IogiParametersProvider(nameProvider, request, instantiator);
 	}
 
 	@Test
@@ -83,7 +85,7 @@ public class IogiParametersProviderTest extends ParametersProviderTest {
 
 		when(container.canProvide(MyResource.class)).thenReturn(true);
 		when(container.instanceFor(MyResource.class)).thenReturn(providedInstance);
-
+		
 		Object[] params = provider.getParametersFor(controllerMethod, errors);
 		assertThat(((NeedsMyResource)params[0]).getMyResource(), is(sameInstance(providedInstance)));
 	}
@@ -121,13 +123,13 @@ public class IogiParametersProviderTest extends ParametersProviderTest {
 	@Test
 	public void willAddValidationMessagesForConversionErrors() throws Exception {
 		ControllerMethod setId = simple;
-		requestParameterIs(setId, "id", "asdf");
-
+		requestParameterIs(setId, "xyz", "asdf");
+		
 		getParameters(setId);
 
-		assertThat(errors.size(), is(1));
+		assertThat(errors, hasSize(1));
 		assertThat(errors.get(0), hasMessage("asdf is not a valid integer."));
-		assertThat(errors.get(0).getCategory(), is("id"));
+		assertThat(errors.get(0).getCategory(), is("xyz"));
 	}
 
 	@Test
@@ -142,8 +144,6 @@ public class IogiParametersProviderTest extends ParametersProviderTest {
 
 	@Test
 	public void isCapableOfDealingWithSets() throws Exception {
-		when(nameProvider.parameterNamesFor(any(Method.class))).thenReturn(new String[]{"abc"});
-
 		ControllerMethod set = method("set", Set.class);
 
 		requestParameterIs(set, "abc", "1", "2");
@@ -156,8 +156,6 @@ public class IogiParametersProviderTest extends ParametersProviderTest {
 
 	@Test
 	public void isCapableOfDealingWithSetsOfObjects() throws Exception {
-		when(nameProvider.parameterNamesFor(any(Method.class))).thenReturn(new String[]{"abc"});
-
 		ControllerMethod set = method("setOfObject", Set.class);
 
 		requestParameterIs(set, "abc.x", "1");

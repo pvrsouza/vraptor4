@@ -17,7 +17,6 @@ package br.com.caelum.vraptor.validator.beanvalidation;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.validation.Validator;
@@ -34,11 +33,13 @@ import javax.validation.ValidatorFactory;
 @Alternative
 public class ValidatorCreator {
 
-	private ValidatorFactory factory;
+	private final ValidatorFactory factory;
 
-	//CDI eyes only
-	@Deprecated
-	public ValidatorCreator() {
+	/** 
+	 * @deprecated CDI eyes only
+	 */
+	protected ValidatorCreator() {
+		this(null);
 	}
 
 	@Inject
@@ -46,7 +47,8 @@ public class ValidatorCreator {
 		this.factory = factory;
 	}
 
-	@Produces @Default @javax.enterprise.context.ApplicationScoped
+	@Produces
+	@ApplicationScoped
 	public Validator getInstanceValidator() {
 		return factory.getValidator();
 	}

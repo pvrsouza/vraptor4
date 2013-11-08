@@ -16,8 +16,9 @@
  */
 package br.com.caelum.vraptor.test;
 
+import static java.util.Collections.enumeration;
+
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +31,6 @@ import javax.servlet.http.HttpSessionContext;
 /**
  * @author Fabio Kung
  */
-@SuppressWarnings("unchecked")
 public class HttpSessionMock implements HttpSession,Serializable {
 	private ServletContext context;
 	private String id;
@@ -46,8 +46,10 @@ public class HttpSessionMock implements HttpSession,Serializable {
 		this.id = id;
 	}
 
-	@Deprecated
-	public HttpSessionMock() {
+	/** 
+	 * @deprecated CDI eyes only
+	 */
+	protected HttpSessionMock() {
 	}
 
 	@Override
@@ -97,8 +99,8 @@ public class HttpSessionMock implements HttpSession,Serializable {
 			}
 
 			@Override
-			public Enumeration getIds() {
-				return new Enumeration() {
+			public Enumeration<String> getIds() {
+				return new Enumeration<String>() {
 					private boolean hasNext = true;
 
 					@Override
@@ -107,7 +109,7 @@ public class HttpSessionMock implements HttpSession,Serializable {
 					}
 
 					@Override
-					public Object nextElement() {
+					public String nextElement() {
 						hasNext = false;
 						return getId();
 					}
@@ -127,8 +129,8 @@ public class HttpSessionMock implements HttpSession,Serializable {
 	}
 
 	@Override
-	public Enumeration getAttributeNames() {
-		return Collections.enumeration(attributes.keySet());
+	public Enumeration<String> getAttributeNames() {
+		return enumeration(attributes.keySet());
 	}
 
 	@Override

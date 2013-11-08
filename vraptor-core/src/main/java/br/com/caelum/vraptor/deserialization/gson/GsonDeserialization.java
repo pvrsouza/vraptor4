@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import br.com.caelum.vraptor.controller.ControllerMethod;
 import br.com.caelum.vraptor.deserialization.Deserializer;
 import br.com.caelum.vraptor.deserialization.Deserializes;
+import br.com.caelum.vraptor.http.Parameter;
 import br.com.caelum.vraptor.http.ParameterNameProvider;
 import br.com.caelum.vraptor.view.ResultException;
 
@@ -43,12 +44,15 @@ public class GsonDeserialization implements Deserializer {
 
 	private static final Logger logger = LoggerFactory.getLogger(GsonDeserialization.class);
 
-	private ParameterNameProvider paramNameProvider;
-	private Instance<JsonDeserializer<?>> adapters; 
-	private HttpServletRequest request;
+	private final ParameterNameProvider paramNameProvider;
+	private final Instance<JsonDeserializer<?>> adapters; 
+	private final HttpServletRequest request;
 
-	@Deprecated // CDI eyes only
-	public GsonDeserialization() {
+	/** 
+	 * @deprecated CDI eyes only
+	 */
+	protected GsonDeserialization() {
+		this(null, null, null);
 	}
 	
 	@Inject
@@ -62,7 +66,6 @@ public class GsonDeserialization implements Deserializer {
 	@Override
 	public Object[] deserialize(InputStream inputStream, ControllerMethod method) {
 		Class<?>[] types = getTypes(method);
-		Type[] pTypes = method.getMethod().getGenericParameterTypes();
 		
 		if (types.length == 0) {
 			throw new IllegalArgumentException("Methods that consumes representations must receive just one argument");
@@ -70,8 +73,8 @@ public class GsonDeserialization implements Deserializer {
 
 		Gson gson = getGson();
 		
-		Object[] params = new Object[types.length];
-		String[] parameterNames = paramNameProvider.parameterNamesFor(method.getMethod());
+		final Parameter[] parameterNames = paramNameProvider.parametersFor(method.getMethod());
+		final Object[] values = new Object[parameterNames.length];
 
 		try {
 			String content = getContentOfStream(inputStream);
@@ -84,37 +87,34 @@ public class GsonDeserialization implements Deserializer {
 					JsonObject root = jsonElement.getAsJsonObject();
 		
 					for (int i = 0; i < types.length; i++) {
-						String name = parameterNames[i];
-						JsonElement node = root.get(name);
+						Parameter parameter = parameterNames[i];
+						JsonElement node = root.get(parameter.getName());
 						
 						if (isWithoutRoot(parameterNames, root)) { 
-							params[i] = gson.fromJson(root, types[i]);
+							values[i] = gson.fromJson(root, parameter.getParameterizedType());
 							logger.info("json without root deserialized");
 							break;
 
 						} else if (node != null) {
 							if (node.isJsonArray()) {
 								JsonArray jsonArray= node.getAsJsonArray();
-								if (pTypes[i] instanceof ParameterizedType)
-									params[i] = gson.fromJson(jsonArray, pTypes[i]);
-								else
-									params[i] = gson.fromJson(jsonArray, types[i]);
+								Type type = parameter.getParameterizedType();
+								if (type instanceof ParameterizedType) {
+									values[i] = gson.fromJson(jsonArray, type);
+								} else {
+									values[i] = gson.fromJson(jsonArray, types[i]);
+								}
 							} else {
-								params[i] = gson.fromJson(node, types[i]);
+								values[i] = gson.fromJson(node, types[i]);
 							}
 						}
-
-						logger.debug("json deserialized: {}", params[i]);
 					}
 				} else if (jsonElement.isJsonArray()) {
-					if ((pTypes.length != 1) || (!(pTypes[0] instanceof ParameterizedType)))
+					if ((parameterNames.length != 1) || (!(parameterNames[0].getParameterizedType() instanceof ParameterizedType)))
 						throw new IllegalArgumentException("Methods that consumes an array representation must receive only just one collection generic typed argument");
 
 					JsonArray jsonArray= jsonElement.getAsJsonArray();
-					
-					params[0] = gson.fromJson(jsonArray, pTypes[0]);
-					
-					logger.debug("array json deserialized: {}", params[0]);
+					values[0] = gson.fromJson(jsonArray, parameterNames[0].getParameterizedType());
 				} else {
 					throw new IllegalArgumentException("This is an invalid or not supported json content");
 				}
@@ -123,7 +123,8 @@ public class GsonDeserialization implements Deserializer {
 			throw new ResultException("Unable to deserialize data", e);
 		}
 
-		return params;
+		logger.debug("json deserialized: {}", (Object) values);
+		return values;
 	}
 
 	protected Gson getGson() {
@@ -159,9 +160,9 @@ public class GsonDeserialization implements Deserializer {
 		return charset.split(",")[0];
 	}
 
-	private boolean isWithoutRoot(String[] parameterNames, JsonObject root) {
-		for (String parameterName : parameterNames) {
-			if (root.get(parameterName) != null)
+	private boolean isWithoutRoot(Parameter[] parameters, JsonObject root) {
+		for (Parameter parameter : parameters) {
+			if (root.get(parameter.getName()) != null)
 				return false;
 		}
 		return true;

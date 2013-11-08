@@ -18,12 +18,13 @@
 package br.com.caelum.vraptor.http.iogi;
 
 import java.lang.reflect.AccessibleObject;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 
+import br.com.caelum.vraptor.http.Parameter;
 import br.com.caelum.vraptor.http.ParameterNameProvider;
 
 /**
@@ -36,10 +37,14 @@ import br.com.caelum.vraptor.http.ParameterNameProvider;
 @RequestScoped
 public class VRaptorParameterNamesProvider implements br.com.caelum.iogi.spi.ParameterNamesProvider {
 
-	private ParameterNameProvider parameterNameProvider;
+	private final ParameterNameProvider parameterNameProvider;
 
-	@Deprecated // CDI eyes only
-	public VRaptorParameterNamesProvider() {}
+	/** 
+	 * @deprecated CDI eyes only
+	 */
+	protected VRaptorParameterNamesProvider() {
+		this(null);
+	}
 
 	@Inject
 	public VRaptorParameterNamesProvider(ParameterNameProvider parameterNameProvider) {
@@ -48,6 +53,10 @@ public class VRaptorParameterNamesProvider implements br.com.caelum.iogi.spi.Par
 
 	@Override
 	public List<String> lookupParameterNames(AccessibleObject methodOrConstructor) {
-		return Arrays.asList(parameterNameProvider.parameterNamesFor(methodOrConstructor));
+		List<String> names = new ArrayList<>();
+		for (Parameter param : parameterNameProvider.parametersFor(methodOrConstructor)) {
+			names.add(param.getName());
+		}
+		return names;
 	}
 }

@@ -26,7 +26,6 @@ import br.com.caelum.vraptor.InterceptionException;
 import br.com.caelum.vraptor.Intercepts;
 import br.com.caelum.vraptor.Result;
 import br.com.caelum.vraptor.controller.ControllerMethod;
-import br.com.caelum.vraptor.core.DefaultExceptionMapper;
 import br.com.caelum.vraptor.core.ExceptionMapper;
 import br.com.caelum.vraptor.core.ExceptionRecorder;
 import br.com.caelum.vraptor.core.InterceptorStack;
@@ -49,12 +48,14 @@ public class ExceptionHandlerInterceptor
 
 	private static final Logger logger = LoggerFactory.getLogger(ExceptionHandlerInterceptor.class);
 
-	private ExceptionMapper exceptions;
-	private Result result;
+	private final ExceptionMapper exceptions;
+	private final Result result;
 
-	//CDI eyes only
-	@Deprecated
-	public ExceptionHandlerInterceptor() {
+	/** 
+	 * @deprecated CDI eyes only
+	 */
+	protected ExceptionHandlerInterceptor() {
+		this(null, null);
 	}
 
 	@Inject

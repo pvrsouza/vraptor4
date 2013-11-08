@@ -39,6 +39,7 @@ import br.com.caelum.vraptor.TwoWayConverter;
 import br.com.caelum.vraptor.core.Converters;
 import br.com.caelum.vraptor.http.EncodingHandler;
 import br.com.caelum.vraptor.http.MutableRequest;
+import br.com.caelum.vraptor.http.Parameter;
 import br.com.caelum.vraptor.util.StringUtils;
 
 /**
@@ -93,9 +94,9 @@ public class DefaultParametersControl implements ParametersControl {
 	}
 
 	@Override
-	public String fillUri(String[] paramNames, Object... paramValues) {
+	public String fillUri(Parameter[] paramNames, Object... paramValues) {
 		if (paramNames.length != paramValues.length) {
-			throw new IllegalArgumentException("paramNames must have the same length as paramValues. Names: " + Arrays.toString(paramNames) + " Values: " + Arrays.toString(paramValues));
+			throw new IllegalArgumentException("paramNames must have the same length as paramValues. Names: " + paramNames + " Values: " + Arrays.toString(paramValues));
 		}
 
 		String[] splittedPatterns = StringUtils.extractParameters(originalPattern);
@@ -130,9 +131,9 @@ public class DefaultParametersControl implements ParametersControl {
 		}
 	}
 
-	private Object selectParam(String key, String[] paramNames, Object[] paramValues) {
+	private Object selectParam(String key, Parameter[] paramNames, Object[] paramValues) {
 		for (int i = 0; i < paramNames.length; i++) {
-			if (key.matches("^" + paramNames[i] + "(\\..*|$)")) {
+			if (key.matches("^" + paramNames[i].getName() + "(\\..*|$)")) {
 				return paramValues[i];
 			}
 		}

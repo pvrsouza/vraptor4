@@ -1,7 +1,7 @@
 package br.com.caelum.vraptor.interceptor.multipart;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.ByteStreams.toByteArray;
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -28,12 +28,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import br.com.caelum.vraptor.Validator;
 import br.com.caelum.vraptor.controller.ControllerMethod;
 import br.com.caelum.vraptor.core.InterceptorStack;
 import br.com.caelum.vraptor.http.InvalidParameterException;
 import br.com.caelum.vraptor.http.MutableRequest;
 import br.com.caelum.vraptor.validator.I18nMessage;
+import br.com.caelum.vraptor.validator.Validator;
 
 /**
  * Test class for uploading features using commons-fileupload.
@@ -155,7 +155,7 @@ public class CommonsUploadMultipartInterceptorTest {
 
 		interceptor = spy(new CommonsUploadMultipartInterceptor(request, config, validator));
 		when(interceptor.createServletFileUpload(config)).thenReturn(servletFileUpload);
-		when(servletFileUpload.parseRequest(request)).thenReturn(newArrayList(item));
+		when(servletFileUpload.parseRequest(request)).thenReturn(asList(item));
 
 		interceptor.intercept(stack, null, null);
 	}

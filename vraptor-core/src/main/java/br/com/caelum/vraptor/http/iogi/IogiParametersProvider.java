@@ -45,13 +45,15 @@ import br.com.caelum.vraptor.validator.Message;
 public class IogiParametersProvider implements ParametersProvider {
 	private static final Logger LOGGER = LoggerFactory.getLogger(IogiParametersProvider.class);
 	
-	private ParameterNameProvider nameProvider;
-	private HttpServletRequest servletRequest;
-	private InstantiatorWithErrors instantiator;
+	private final ParameterNameProvider nameProvider;
+	private final HttpServletRequest servletRequest;
+	private final InstantiatorWithErrors instantiator;
 
-	//CDI eyes only
-	@Deprecated
-	public IogiParametersProvider() {
+	/** 
+	 * @deprecated CDI eyes only
+	 */
+	protected IogiParametersProvider() {
+		this(null, null, null);
 	}
 	
 	@Inject
@@ -89,14 +91,13 @@ public class IogiParametersProvider implements ParametersProvider {
 		Method javaMethod = method.getMethod();
 		List<Target<Object>> targets = new ArrayList<>();
 
-		Type[] parameterTypes = javaMethod.getGenericParameterTypes();
-		String[] parameterNames = nameProvider.parameterNamesFor(javaMethod);
-		for (int i = 0; i < methodArity(javaMethod); i++) {
-			if (parameterTypes[i] instanceof TypeVariable) {
-				parameterTypes[i] = extractType(method);
+		for (br.com.caelum.vraptor.http.Parameter p : nameProvider.parametersFor(javaMethod)) {
+			Type type = p.getParameterizedType();
+			if (type instanceof TypeVariable) {
+				type = extractType(method);
 			}
-			
-			targets.add(new Target<>(parameterTypes[i], parameterNames[i]));
+
+			targets.add(new Target<>(type, p.getName()));
 		}
 
 		return targets;
@@ -105,10 +106,6 @@ public class IogiParametersProvider implements ParametersProvider {
 	private Type extractType(ControllerMethod method) {
 		ParameterizedType superclass = (ParameterizedType) method.getController().getType().getGenericSuperclass();
 		return superclass.getActualTypeArguments()[0];
-	}
-
-	private int methodArity(Method method) {
-		return method.getGenericParameterTypes().length;
 	}
 
 	private Parameters parseParameters(HttpServletRequest request) {

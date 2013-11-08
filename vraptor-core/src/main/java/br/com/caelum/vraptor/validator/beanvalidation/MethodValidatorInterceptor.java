@@ -33,15 +33,16 @@ import org.slf4j.LoggerFactory;
 
 import br.com.caelum.vraptor.InterceptionException;
 import br.com.caelum.vraptor.Intercepts;
-import br.com.caelum.vraptor.Validator;
 import br.com.caelum.vraptor.controller.ControllerMethod;
 import br.com.caelum.vraptor.core.InterceptorStack;
 import br.com.caelum.vraptor.core.MethodInfo;
+import br.com.caelum.vraptor.http.Parameter;
 import br.com.caelum.vraptor.http.ParameterNameProvider;
 import br.com.caelum.vraptor.interceptor.ExecuteMethodInterceptor;
 import br.com.caelum.vraptor.interceptor.Interceptor;
 import br.com.caelum.vraptor.interceptor.ParametersInstantiatorInterceptor;
-import br.com.caelum.vraptor.validator.ValidationMessage;
+import br.com.caelum.vraptor.validator.SimpleMessage;
+import br.com.caelum.vraptor.validator.Validator;
 
 import com.google.common.base.Joiner;
 
@@ -58,17 +59,19 @@ public class MethodValidatorInterceptor implements Interceptor {
 
 	private static final Logger logger = LoggerFactory.getLogger(MethodValidatorInterceptor.class);
 	
-	private Locale locale;
-	private MessageInterpolator interpolator;
-	private MethodInfo methodInfo;
-	private Validator validator;
-	private ParameterNameProvider parameterNameProvider;
+	private final Locale locale;
+	private final MessageInterpolator interpolator;
+	private final MethodInfo methodInfo;
+	private final Validator validator;
+	private final ParameterNameProvider parameterNameProvider;
+	private final javax.validation.Validator bvalidator;
 
-	private javax.validation.Validator bvalidator;
-
-
-	@Deprecated
-	public MethodValidatorInterceptor() {}
+	/** 
+	 * @deprecated CDI eyes only
+	 */
+	protected MethodValidatorInterceptor() {
+		this(null, null, null, null, null, null);
+	}
 
 	@Inject
 	public MethodValidatorInterceptor(Locale locale, MessageInterpolator interpolator, Validator validator,
@@ -106,16 +109,15 @@ public class MethodValidatorInterceptor implements Interceptor {
 				.validateParameters(controllerInstance, method.getMethod(), methodInfo.getParameters());
 		logger.debug("there are {} violations at method {}.", violations.size(), method);
 
-		String[] names = violations.isEmpty() ? null
-				: parameterNameProvider.parameterNamesFor(method.getMethod());
+		Parameter[] params = violations.isEmpty() ? new Parameter[0] : parameterNameProvider.parametersFor(method.getMethod());
 
 		for (ConstraintViolation<Object> v : violations) {
 			BeanValidatorContext ctx = new BeanValidatorContext(v);
 			String msg = interpolator.interpolate(v.getMessageTemplate(), ctx, locale);
-			String category = extractCategory(names, v);
-			validator.add(new ValidationMessage(msg, category));
+			String category = extractCategory(params, v);
+			validator.add(new SimpleMessage(category, msg));
 			
-			logger.debug("added message {}={} for contraint violation", msg, category);
+			logger.debug("added message {}={} for contraint violation", category, msg);
 		}
 
 		stack.next(method, controllerInstance);
@@ -123,16 +125,16 @@ public class MethodValidatorInterceptor implements Interceptor {
 
 	/**
 	 * Returns the category for this constraint violation. By default, the category returned
-	 * is the name of method, plus full path for property. You can override this method to
+	 * is the name of method with full path for property. You can override this method to
 	 * change this behaviour.
 	 */
-	protected String extractCategory(String[] names, ConstraintViolation<Object> v) {
+	protected String extractCategory(Parameter[] params, ConstraintViolation<Object> v) {
 		Iterator<Node> property = v.getPropertyPath().iterator();
 		property.next();
 		ParameterNode parameterNode = property.next().as(ParameterNode.class);
 
 		int index = parameterNode.getParameterIndex();
 		return Joiner.on(".").join(v.getPropertyPath())
-				.replace("arg" + parameterNode.getParameterIndex(), names[index]);
+				.replace("arg" + parameterNode.getParameterIndex(), params[index].getName());
 	}
 }

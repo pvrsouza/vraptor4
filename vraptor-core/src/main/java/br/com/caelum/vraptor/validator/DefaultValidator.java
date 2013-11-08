@@ -29,7 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import br.com.caelum.vraptor.Result;
-import br.com.caelum.vraptor.Validator;
 import br.com.caelum.vraptor.View;
 import br.com.caelum.vraptor.proxy.Proxifier;
 import br.com.caelum.vraptor.util.test.MockResult;
@@ -45,16 +44,18 @@ public class DefaultValidator extends AbstractValidator {
 
 	private static final Logger logger = LoggerFactory.getLogger(DefaultValidator.class);
 
-	private Result result;
-	private List<Message> errors = new ArrayList<>();
-	private ValidationViewsFactory viewsFactory;
-	private Outjector outjector;
-	private Proxifier proxifier;
-	private ResourceBundle bundle;
+	private final Result result;
+	private final List<Message> errors = new ArrayList<>();
+	private final ValidationViewsFactory viewsFactory;
+	private final Outjector outjector;
+	private final Proxifier proxifier;
+	private final ResourceBundle bundle;
 
-	//CDI eyes only
-	@Deprecated
-	public DefaultValidator() {
+	/** 
+	 * @deprecated CDI eyes only
+	 */
+	protected DefaultValidator() {
+		this(null, null, null, null, null);
 	}
 
 	@Inject

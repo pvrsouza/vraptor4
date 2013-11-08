@@ -24,6 +24,7 @@ import javax.inject.Inject;
 import br.com.caelum.vraptor.controller.ControllerMethod;
 import br.com.caelum.vraptor.deserialization.Deserializer;
 import br.com.caelum.vraptor.deserialization.Deserializes;
+import br.com.caelum.vraptor.http.Parameter;
 import br.com.caelum.vraptor.http.ParameterNameProvider;
 import br.com.caelum.vraptor.serialization.xstream.XStreamBuilder;
 
@@ -41,11 +42,15 @@ import com.thoughtworks.xstream.XStream;
 @Deserializes({"application/xml","xml", "text/xml"})
 public class XStreamXMLDeserializer implements Deserializer {
 
-	private ParameterNameProvider provider;
-	private XStreamBuilder builder;
+	private final ParameterNameProvider provider;
+	private final XStreamBuilder builder;
 
-	@Deprecated// CDI eyes only
-	public XStreamXMLDeserializer() {}
+	/** 
+	 * @deprecated CDI eyes only
+	 */
+	protected XStreamXMLDeserializer() {
+		this(null, null);
+	}
 
 	@Inject
 	public XStreamXMLDeserializer(ParameterNameProvider provider, XStreamBuilder builder) {
@@ -77,7 +82,7 @@ public class XStreamXMLDeserializer implements Deserializer {
 
 		xStream.processAnnotations(types);
 
-		aliasParams(javaMethod, types, xStream);
+		aliasParams(javaMethod, xStream);
 		return xStream;
 	}
 
@@ -89,11 +94,9 @@ public class XStreamXMLDeserializer implements Deserializer {
 		}
 	}
 
-	private void aliasParams(Method method, Class<?>[] types, XStream deserializer) {
-		String[] names = provider.parameterNamesFor(method);
-		for (int i = 0; i < names.length; i++) {
-			deserializer.alias(names[i], types[i]);
+	private void aliasParams(Method method, XStream deserializer) {
+		for (Parameter param : provider.parametersFor(method)) {
+			deserializer.alias(param.getName(), param.getType());
 		}
 	}
-
 }

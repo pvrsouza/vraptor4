@@ -10,12 +10,10 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertArrayEquals;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,10 +27,11 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import br.com.caelum.vraptor.Converter;
 import br.com.caelum.vraptor.Result;
+import br.com.caelum.vraptor.cache.DefaultCacheStore;
 import br.com.caelum.vraptor.controller.ControllerMethod;
 import br.com.caelum.vraptor.controller.DefaultControllerMethod;
+import br.com.caelum.vraptor.converter.Converter;
 import br.com.caelum.vraptor.converter.LongConverter;
 import br.com.caelum.vraptor.converter.PrimitiveLongConverter;
 import br.com.caelum.vraptor.converter.StringConverter;
@@ -47,7 +46,7 @@ public abstract class ParametersProviderTest {
 
 
 	protected @Mock Converters converters;
-	protected @Mock ParameterNameProvider nameProvider;
+	protected ParameterNameProvider nameProvider;
 	protected @Mock HttpServletRequest request;
 	protected @Mock Container container;
 
@@ -74,16 +73,16 @@ public abstract class ParametersProviderTest {
 	@Before
 	public void setup() throws Exception {
 		MockitoAnnotations.initMocks(this);
+		nameProvider = new ParanamerNameProvider(new DefaultCacheStore<AccessibleObject, Parameter[]>());
 		this.provider = getProvider();
 		this.errors = new ArrayList<>();
+		
 		when(converters.existsFor(Long.class)).thenReturn(true);
 		when(converters.existsFor(long.class)).thenReturn(true);
 		when(converters.existsFor(String.class)).thenReturn(true);
 		when(converters.to(Long.class)).thenReturn(new LongConverter());
 		when(converters.to(long.class)).thenReturn(new PrimitiveLongConverter());
 		when(converters.to(String.class)).thenReturn(new StringConverter());
-
-		when(nameProvider.parameterNamesFor(any(AccessibleObject.class))).thenReturn(new String[0]);
 
 		buyA 		= method("buyA", House.class);
 		kick 		= method("kick", AngryCat.class);
@@ -134,8 +133,8 @@ public abstract class ParametersProviderTest {
 
 	@Test
 	public void isCapableOfDealingWithGenerics() throws Exception {
-		requestParameterIs(generic, "abc.x", "123");
-
+		requestParameterIs(generic, "t.x", "123");
+		
 		ABC abc = getParameters(generic);
 
 		assertThat(abc.x, is(123l));
@@ -289,7 +288,7 @@ public abstract class ParametersProviderTest {
 
 		when(container.canProvide(Result.class)).thenReturn(true);
 		when(container.instanceFor(Result.class)).thenReturn(result);
-
+		
 		Result returned = getParameters(dependency);
 		assertThat(returned, is(result));
 	}
@@ -297,7 +296,6 @@ public abstract class ParametersProviderTest {
 	@Test
 	public void returnsDependenciesIfRequestCanProvide() throws Exception {
 		thereAreNoParameters();
-		when(nameProvider.parameterNamesFor(dependency.getMethod())).thenReturn(new String[] {"result"});
 		Result result = mock(Result.class);
 
 		when(request.getAttribute("result")).thenReturn(result);
@@ -333,7 +331,7 @@ public abstract class ParametersProviderTest {
 	@Test
 	public void returnsZeroForAPrimitiveWhenThereAreNoParameters() throws Exception {
 		thereAreNoParameters();
-
+		
 		Long xyz = getParameters(primitive);
 		assertThat(xyz, is(0l));
 	}
@@ -344,8 +342,7 @@ public abstract class ParametersProviderTest {
 		when(request.getParameterMap()).thenReturn(params);
 		when(request.getParameterValues("abc")).thenReturn(params.get("abc"));
 		when(request.getParameterValues("abc.x")).thenReturn(params.get("abc.x"));
-		when(nameProvider.parameterNamesFor(any(Method.class))).thenReturn(new String[]{"abc"});
-
+		
 		when(converters.existsFor(ABC.class)).thenReturn(true);
 		when(converters.to(ABC.class)).thenReturn(new Converter<ABC>() {
 			@Override
@@ -361,6 +358,7 @@ public abstract class ParametersProviderTest {
 	@Test
 	public void returnsAnEmptyObjectArrayForZeroArityMethods() throws Exception {
 		thereAreNoParameters();
+
 		Object[] params = provider.getParametersFor(doNothing, errors);
 
 		assertArrayEquals(new Object[] {}, params);
@@ -378,18 +376,14 @@ public abstract class ParametersProviderTest {
 	protected void thereAreNoParameters() {
 		when(request.getParameterNames()).thenReturn(Collections.enumeration(Collections.<String>emptySet()));
 		when(request.getParameterMap()).thenReturn(Collections.<String, String[]>emptyMap());
-		when(nameProvider.parameterNamesFor(any(Method.class))).thenReturn(new String[]{"any"});
 	}
 
 	protected void requestParameterIs(ControllerMethod method, String paramName, String... values) {
-		String methodName = paramName.replaceAll("[\\.\\[].*", "");
-
 		when(request.getParameterValues(paramName)).thenReturn(values);
 		String[] values1 = { paramName };
 		when(request.getParameterNames()).thenReturn(Collections.enumeration(Arrays.asList(values1)));
-		when(nameProvider.parameterNamesFor(method.getMethod())).thenReturn(new String[]{methodName});
 		when(request.getParameterMap()).thenReturn(Collections.singletonMap(paramName, values));
-
+		when(request.getParameter(paramName)).thenReturn(values[0]);
 	}
 
 

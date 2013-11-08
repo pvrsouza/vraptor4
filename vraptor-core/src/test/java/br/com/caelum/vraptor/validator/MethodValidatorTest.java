@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.lang.reflect.AccessibleObject;
 import java.util.Locale;
 
 import javax.validation.MessageInterpolator;
@@ -15,11 +16,12 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import br.com.caelum.vraptor.Validator;
+import br.com.caelum.vraptor.cache.DefaultCacheStore;
 import br.com.caelum.vraptor.controller.ControllerMethod;
 import br.com.caelum.vraptor.controller.DefaultControllerMethod;
 import br.com.caelum.vraptor.core.InterceptorStack;
 import br.com.caelum.vraptor.core.MethodInfo;
+import br.com.caelum.vraptor.http.Parameter;
 import br.com.caelum.vraptor.http.ParameterNameProvider;
 import br.com.caelum.vraptor.http.ParanamerNameProvider;
 import br.com.caelum.vraptor.util.test.MockValidator;
@@ -51,12 +53,11 @@ public class MethodValidatorTest {
 
 		Locale.setDefault(Locale.ENGLISH);
 
-		provider = new ParanamerNameProvider();
+		provider = new ParanamerNameProvider(new DefaultCacheStore<AccessibleObject, Parameter[]>());
 		
 		validatorFactory = javax.validation.Validation.buildDefaultValidatorFactory();
 
 		MessageInterpolatorFactory interpolatorFactory = new MessageInterpolatorFactory(validatorFactory);
-		interpolatorFactory.createInterpolator();
 		interpolator = interpolatorFactory.getInstance();
 
 		validator = new MockValidator();

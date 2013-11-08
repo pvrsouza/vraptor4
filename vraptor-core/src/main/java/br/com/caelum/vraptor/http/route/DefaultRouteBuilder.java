@@ -66,6 +66,7 @@ import br.com.caelum.vraptor.controller.DefaultControllerMethod;
 import br.com.caelum.vraptor.controller.HttpMethod;
 import br.com.caelum.vraptor.core.Converters;
 import br.com.caelum.vraptor.http.EncodingHandler;
+import br.com.caelum.vraptor.http.Parameter;
 import br.com.caelum.vraptor.http.ParameterNameProvider;
 import br.com.caelum.vraptor.proxy.MethodInvocation;
 import br.com.caelum.vraptor.proxy.Proxifier;
@@ -86,34 +87,28 @@ import com.google.common.base.Joiner;
  */
 @Vetoed
 public class DefaultRouteBuilder implements RouteBuilder {
+	private static final Logger logger = LoggerFactory.getLogger(DefaultRouteBuilder.class);
+	
 	private static final List<?> CHARACTER_TYPES = asList(char.class, Character.class);
 	private static final List<?> DECIMAL_TYPES = asList(Double.class, BigDecimal.class, double.class, Float.class, float.class);
 	private static final List<?> BOOLEAN_TYPES = asList(Boolean.class, boolean.class);
 	private static final List<?> NUMERIC_TYPES = asList(Integer.class, Long.class, int.class, long.class, BigInteger.class, Short.class, short.class);
 	
 	private final Set<HttpMethod> supportedMethods = EnumSet.noneOf(HttpMethod.class);
-
-	private final Proxifier proxifier;
-	private static final Logger logger = LoggerFactory.getLogger(DefaultRouteBuilder.class);
-
-	private final String originalUri;
-
+	private final DefaultParameterControlBuilder builder = new DefaultParameterControlBuilder();
 	private Route strategy = new NoStrategy();
-
 	private int priority = Path.LOWEST;
 
-	private final DefaultParameterControlBuilder builder;
-
+	private final Proxifier proxifier;
 	private final TypeFinder finder;
-
 	private final Converters converters;
-
 	private final ParameterNameProvider nameProvider;
 	private final Evaluator evaluator;
+	private final String originalUri;
+	private final EncodingHandler encodingHandler;
 
-	private EncodingHandler encodingHandler;
-
-	public DefaultRouteBuilder(Proxifier proxifier, TypeFinder finder, Converters converters, ParameterNameProvider nameProvider, Evaluator evaluator, String uri, EncodingHandler encodingHandler) {
+	public DefaultRouteBuilder(Proxifier proxifier, TypeFinder finder, Converters converters, ParameterNameProvider nameProvider, 
+			Evaluator evaluator, String uri, EncodingHandler encodingHandler) {
 		this.proxifier = proxifier;
 		this.finder = finder;
 		this.converters = converters;
@@ -121,7 +116,6 @@ public class DefaultRouteBuilder implements RouteBuilder {
 		this.evaluator = evaluator;
 		this.originalUri = uri;
 		this.encodingHandler = encodingHandler;
-		builder = new DefaultParameterControlBuilder();
 	}
 
 	public class DefaultParameterControlBuilder implements ParameterControlBuilder {
@@ -191,7 +185,7 @@ public class DefaultRouteBuilder implements RouteBuilder {
 	public void is(Class<?> type, Method method) {
 		addParametersInfo(method);
 		ControllerMethod controllerMethod = DefaultControllerMethod.instanceFor(type, method);
-		String[] parameterNames = nameProvider.parameterNamesFor(method);
+		Parameter[] parameterNames = nameProvider.parametersFor(method);
 		this.strategy = new FixedMethodStrategy(originalUri, controllerMethod, this.supportedMethods, builder.build(), priority, parameterNames);
 
 		logger.info(String.format("%-50s%s -> %10s", originalUri,

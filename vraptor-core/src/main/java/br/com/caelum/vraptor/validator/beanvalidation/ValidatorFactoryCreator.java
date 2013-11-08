@@ -17,7 +17,6 @@ package br.com.caelum.vraptor.validator.beanvalidation;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 import javax.validation.Validation;
@@ -39,14 +38,8 @@ public class ValidatorFactoryCreator {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ValidatorFactoryCreator.class);
 	
-	//CDI eyes only
-	@Deprecated
-	public ValidatorFactoryCreator() {
-	}
-	
-	@Produces 
-	@Default 
-	@javax.enterprise.context.ApplicationScoped
+	@Produces
+	@ApplicationScoped
 	public ValidatorFactory getInstance() {
 		logger.debug("Initializing Bean Validator");
 		return Validation.byDefaultProvider().configure().buildValidatorFactory();

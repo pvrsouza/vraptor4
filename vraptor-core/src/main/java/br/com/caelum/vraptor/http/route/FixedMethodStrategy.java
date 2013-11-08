@@ -17,16 +17,16 @@
 
 package br.com.caelum.vraptor.http.route;
 
-import static com.google.common.base.Objects.equal;
-
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.Objects;
 import java.util.Set;
 
 import br.com.caelum.vraptor.controller.ControllerMethod;
 import br.com.caelum.vraptor.controller.HttpMethod;
 import br.com.caelum.vraptor.http.MutableRequest;
+import br.com.caelum.vraptor.http.Parameter;
 import br.com.caelum.vraptor.util.Stringnifier;
 
 /**
@@ -37,19 +37,14 @@ import br.com.caelum.vraptor.util.Stringnifier;
 public class FixedMethodStrategy implements Route {
 
 	private final ControllerMethod controllerMethod;
-
 	private final EnumSet<HttpMethod> methods;
-
 	private final ParametersControl parameters;
-
 	private final int priority;
-
 	private final String originalUri;
-
-	private final String[] parameterNames;
+	private final Parameter[] parameterNames;
 
 	public FixedMethodStrategy(String originalUri, ControllerMethod method, Set<HttpMethod> methods,
-			ParametersControl control, int priority, String[] parameterNames) {
+			ParametersControl control, int priority, Parameter[] parameterNames) {
 		this.originalUri = originalUri;
 		this.parameterNames = parameterNames;
 		this.methods = methods.isEmpty() ? EnumSet.allOf(HttpMethod.class) : EnumSet.copyOf(methods);
@@ -110,26 +105,19 @@ public class FixedMethodStrategy implements Route {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((methods == null) ? 0 : methods.hashCode());
-		result = prime * result + ((originalUri == null) ? 0 : originalUri.hashCode());
-		result = prime * result + ((controllerMethod == null) ? 0 : controllerMethod.hashCode());
-		return result;
+		return Objects.hash(methods, originalUri, controllerMethod);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (obj == null) {
+		if (obj == null || getClass() != obj.getClass())
 			return false;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
+		
 		FixedMethodStrategy other = (FixedMethodStrategy) obj;
-		return equal(methods, other.methods) && equal(originalUri, other.originalUri) && equal(controllerMethod,other.controllerMethod);
+		return Objects.equals(methods, other.methods) 
+				&& Objects.equals(originalUri, other.originalUri) 
+				&& Objects.equals(controllerMethod,other.controllerMethod);
 	}
 }

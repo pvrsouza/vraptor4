@@ -19,8 +19,6 @@ package br.com.caelum.vraptor.interceptor;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -30,19 +28,18 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
-
 import br.com.caelum.vraptor.HeaderParam;
 import br.com.caelum.vraptor.InterceptionException;
 import br.com.caelum.vraptor.Intercepts;
-import br.com.caelum.vraptor.Validator;
 import br.com.caelum.vraptor.controller.ControllerMethod;
 import br.com.caelum.vraptor.core.InterceptorStack;
 import br.com.caelum.vraptor.core.MethodInfo;
 import br.com.caelum.vraptor.http.MutableRequest;
+import br.com.caelum.vraptor.http.Parameter;
 import br.com.caelum.vraptor.http.ParameterNameProvider;
 import br.com.caelum.vraptor.http.ParametersProvider;
 import br.com.caelum.vraptor.validator.Message;
+import br.com.caelum.vraptor.validator.Validator;
 import br.com.caelum.vraptor.view.FlashScope;
 
 /**
@@ -52,18 +49,22 @@ import br.com.caelum.vraptor.view.FlashScope;
  */
 @Intercepts(after=ControllerLookupInterceptor.class)
 public class ParametersInstantiatorInterceptor implements Interceptor {
-	private ParametersProvider provider;
-	private ParameterNameProvider parameterNameProvider;
-	private MethodInfo parameters;
-
 	private static final Logger logger = LoggerFactory.getLogger(ParametersInstantiatorInterceptor.class);
-	private Validator validator;
-	private final List<Message> errors = new ArrayList<>();
-	private MutableRequest request;
-	private FlashScope flash;
+	
+	private final ParametersProvider provider;
+	private final ParameterNameProvider parameterNameProvider;
+	private final MethodInfo parameters;
+	private final Validator validator;
+	private final MutableRequest request;
+	private final FlashScope flash;
 
-	@Deprecated
-	public ParametersInstantiatorInterceptor() {
+	private final List<Message> errors = new ArrayList<>();
+	
+	/** 
+	 * @deprecated CDI eyes only
+	 */
+	protected ParametersInstantiatorInterceptor() {
+		this(null, null, null, null, null, null);
 	}
 
 	@Inject
@@ -102,22 +103,14 @@ public class ParametersInstantiatorInterceptor implements Interceptor {
 		stack.next(method, controllerInstance);
 	}
 
-	private void addHeaderParametersToAttribute(ControllerMethod method) {
-		Method trueMethod = method.getMethod();
-
-		String[] parameters = parameterNameProvider.parameterNamesFor(trueMethod);
-
-		Annotation[][] annotations = trueMethod.getParameterAnnotations();
-		for (int i = 0; i < annotations.length; i++) {
-			for (Annotation annotation : annotations[i]) {
-				if (annotation instanceof HeaderParam) {
-					HeaderParam headerParam = (HeaderParam) annotation;
-					String value = request.getHeader(headerParam.value());
-					request.setAttribute(parameters[i], value);
-				}
+	private void addHeaderParametersToAttribute(ControllerMethod controllerMethod) {
+		for (Parameter param : parameterNameProvider.parametersFor(controllerMethod.getMethod())) {
+			HeaderParam headerParam = param.getAnnotation(HeaderParam.class);
+			if (headerParam != null) {
+				String value = request.getHeader(headerParam.value());
+				request.setParameter(param.getName(), value);
 			}
 		}
-
 	}
 
 	private void fixParameter(String name) {

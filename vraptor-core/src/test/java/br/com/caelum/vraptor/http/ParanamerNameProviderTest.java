@@ -17,10 +17,12 @@
 package br.com.caelum.vraptor.http;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 
+import java.lang.reflect.AccessibleObject;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Named;
@@ -28,66 +30,81 @@ import javax.inject.Named;
 import org.junit.Before;
 import org.junit.Test;
 
+import br.com.caelum.vraptor.cache.CacheStore;
+import br.com.caelum.vraptor.cache.DefaultCacheStore;
+
 public class ParanamerNameProviderTest {
 
 	private ParanamerNameProvider provider;
 
 	@Before
 	public void setup() {
-		this.provider = new ParanamerNameProvider();
+		CacheStore<AccessibleObject, Parameter[]> cache = new DefaultCacheStore<>();
+		provider = new ParanamerNameProvider(cache);
+	}
+	
+	private List<String> toNames(Parameter[] parameters) {
+		List<String> out = new ArrayList<>();
+		for (Parameter p : parameters)
+			out.add(p.getName());
+		return out;
 	}
 
 	@Test
 	public void shouldNameObjectTypeAsItsSimpleName() throws SecurityException, NoSuchMethodException {
-		assertThat(provider.parameterNamesFor(Horse.class.getMethod("runThrough", Field.class))[0], is(equalTo("f")));
+		Parameter[] namesFor = provider.parametersFor(Horse.class.getMethod("runThrough", Field.class));
+		assertThat(toNames(namesFor), contains("f"));
 	}
 
 	@Test
 	public void shouldNamePrimitiveTypeAsItsSimpleName() throws SecurityException, NoSuchMethodException {
-		assertThat(provider.parameterNamesFor(Horse.class.getMethod("rest", int.class))[0], is(equalTo("hours")));
+		Parameter[] namesFor = provider.parametersFor(Horse.class.getMethod("rest", int.class));
+		assertThat(toNames(namesFor), contains("hours"));
 	}
 
 	@Test
 	public void shouldNameArrayAsItsSimpleTypeName() throws SecurityException, NoSuchMethodException {
-		assertThat(provider.parameterNamesFor(Horse.class.getMethod("setLeg", int[].class))[0], is(equalTo("length")));
+		Parameter[] namesFor = provider.parametersFor(Horse.class.getMethod("setLeg", int[].class));
+		assertThat(toNames(namesFor), contains("length"));
 	}
 
 	@Test
 	public void shouldNameGenericCollectionUsingOf() throws SecurityException, NoSuchMethodException {
-		assertThat(provider.parameterNamesFor(Cat.class.getDeclaredMethod("fightWith", List.class))[0], is(equalTo("cats")));
+		Parameter[] namesFor = provider.parametersFor(Cat.class.getDeclaredMethod("fightWith", List.class));
+		assertThat(toNames(namesFor), contains("cats"));
 	}
 	
 	@Test
 	public void shouldIgnoreChangesToTheReturnedArrayInSubsequentCalls() throws Exception {
-		String[] resultOfFirstCall = provider.parameterNamesFor(Horse.class.getMethod("setLeg", int[].class));
-		assertThat(resultOfFirstCall[0], is(equalTo("length")));
-		
-		resultOfFirstCall[0] = "ASDF";
-		
-		String[] resultOfSecondCall = provider.parameterNamesFor(Horse.class.getMethod("setLeg", int[].class));
-		assertThat(resultOfSecondCall[0], is(equalTo("length")));
+		Parameter[] firstCall = provider.parametersFor(Horse.class.getMethod("setLeg", int[].class));
+		firstCall[0] = null;
+
+		Parameter[] secondCall = provider.parametersFor(Horse.class.getMethod("setLeg", int[].class));
+		assertThat(secondCall[0], notNullValue());
 	}
 	
 	@Test
 	public void shouldNameFieldsAnnotatedWithNamed() throws SecurityException, NoSuchMethodException  {
-		assertThat(provider.parameterNamesFor(Horse.class.getMethod("runThroughWithAnnotation", Field.class))[0], is(equalTo("one")));
+		Parameter[] namesFor = provider.parametersFor(Horse.class.getMethod("runThroughWithAnnotation", Field.class));
+		assertThat(toNames(namesFor), contains("one"));
 	}
 	
 	@Test
 	public void shouldNotNameFieldsByTheFieldNameWhenUsingAnnotation() throws SecurityException, NoSuchMethodException  {
-		assertThat(provider.parameterNamesFor(Horse.class.getMethod("runThroughWithAnnotation", Field.class))[0], is(not(equalTo("field"))));
+		Parameter[] namesFor = provider.parametersFor(Horse.class.getMethod("runThroughWithAnnotation", Field.class));
+		assertThat(toNames(namesFor), not(contains("field")));
 	}
 
 	@Test
 	public void shouldNameMethodsFieldsWhenAnnotatedOrNot() throws SecurityException, NoSuchMethodException  {
-		assertThat(provider.parameterNamesFor(Horse.class.getMethod("runThroughWithAnnotation2", Field.class, Field.class))[0], is(equalTo("one")));
-		assertThat(provider.parameterNamesFor(Horse.class.getMethod("runThroughWithAnnotation2", Field.class, Field.class))[1], is(equalTo("two")));
+		Parameter[] namesFor = provider.parametersFor(Horse.class.getMethod("runThroughWithAnnotation2", Field.class, Field.class));
+		assertThat(toNames(namesFor), contains("one", "two"));
 	}
 	
 	@Test
 	public void shouldNameMethodsFieldsWhenAnnotatedOrNot2() throws SecurityException, NoSuchMethodException  {
-		assertThat(provider.parameterNamesFor(Horse.class.getMethod("runThroughWithAnnotation3", Field.class, Field.class))[0], is(equalTo("one")));
-		assertThat(provider.parameterNamesFor(Horse.class.getMethod("runThroughWithAnnotation3", Field.class, Field.class))[1], is(equalTo("size")));
+		Parameter[] namesFor = provider.parametersFor(Horse.class.getMethod("runThroughWithAnnotation3", Field.class, Field.class));
+		assertThat(toNames(namesFor), contains("one", "size"));
 	}
 
 	static class Field {

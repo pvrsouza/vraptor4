@@ -17,8 +17,8 @@
 package br.com.caelum.vraptor.core;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Maps.newLinkedHashMap;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -47,14 +47,16 @@ public class DefaultExceptionMapper implements ExceptionMapper {
 	private final Map<Class<? extends Exception>, ExceptionRecorder<Result>> exceptions;
 	private final Proxifier proxifier;
 
-	@Deprecated
-	public DefaultExceptionMapper() {
+	/** 
+	 * @deprecated CDI eyes only
+	 */
+	protected DefaultExceptionMapper() {
 		this(null);
 	}
 	@Inject
 	public DefaultExceptionMapper(Proxifier proxifier) {
 		this.proxifier = proxifier;
-		this.exceptions = newLinkedHashMap();
+		this.exceptions = new LinkedHashMap<>();
 	}
 
 	@Override

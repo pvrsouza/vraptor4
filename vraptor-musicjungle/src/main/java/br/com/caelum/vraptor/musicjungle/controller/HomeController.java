@@ -18,21 +18,16 @@ package br.com.caelum.vraptor.musicjungle.controller;
 
 import javax.inject.Inject;
 
-import org.hibernate.SessionFactory;
-import org.hsqldb.Session;
-
-import sun.awt.ComponentFactory;
 import br.com.caelum.vraptor.Controller;
 import br.com.caelum.vraptor.Get;
 import br.com.caelum.vraptor.Post;
 import br.com.caelum.vraptor.Result;
-import br.com.caelum.vraptor.Validator;
-import br.com.caelum.vraptor.musicjungle.dao.DefaultUserDao;
 import br.com.caelum.vraptor.musicjungle.dao.UserDao;
 import br.com.caelum.vraptor.musicjungle.interceptor.Public;
 import br.com.caelum.vraptor.musicjungle.interceptor.UserInfo;
 import br.com.caelum.vraptor.musicjungle.model.User;
-import br.com.caelum.vraptor.validator.ValidationMessage;
+import br.com.caelum.vraptor.validator.SimpleMessage;
+import br.com.caelum.vraptor.validator.Validator;
 
 /**
  * This class will be responsible to login/logout users.
@@ -58,8 +53,7 @@ public class HomeController {
 	 * You can receive any dependency on constructor. If VRaptor knows all dependencies, this
 	 * class will be created with no problem. You can use as dependencies:
 	 * - all VRaptor components, e.g {@link Result} and {@link Validator}
-	 * - all of your classes annotated with @Component, e.g {@link DefaultUserDao}
-	 * - all of the classes that have a {@link ComponentFactory}, e.g {@link Session} or {@link SessionFactory}
+	 * - all of your CDI classes, e.g {@link DefaultUserDao}
 	 */
 	@Inject
 	public HomeController(UserDao dao, UserInfo userInfo, Result result, Validator validator) {
@@ -94,7 +88,7 @@ public class HomeController {
 		// if no user is found, adds an error message to the validator
 		// "invalid_login_or_password" is the message key from messages.properties,
 		// and that key is used with the fmt taglib in index.jsp, for example: <fmt:message key="error.key">
-		validator.check(currentUser != null, new ValidationMessage("login", "invalid_login_or_password"));
+		validator.check(currentUser != null, new SimpleMessage("login", "invalid_login_or_password"));
 		
 		// you can use "this" to redirect to another logic from this controller
 		validator.onErrorUsePageOf(this).login();

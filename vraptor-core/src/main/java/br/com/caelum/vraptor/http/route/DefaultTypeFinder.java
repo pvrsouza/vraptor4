@@ -25,6 +25,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import net.vidageek.mirror.dsl.Mirror;
+import br.com.caelum.vraptor.http.Parameter;
 import br.com.caelum.vraptor.http.ParameterNameProvider;
 /**
  * Discover parameter types
@@ -34,11 +35,13 @@ import br.com.caelum.vraptor.http.ParameterNameProvider;
 @ApplicationScoped
 public class DefaultTypeFinder implements TypeFinder {
 
-	private ParameterNameProvider provider;
+	private final ParameterNameProvider provider;
 	
-	//CDI eyes only
-	@Deprecated
-	public DefaultTypeFinder() {
+	/** 
+	 * @deprecated CDI eyes only
+	 */
+	protected DefaultTypeFinder() {
+		this(null);
 	}
 	
 	@Inject
@@ -49,13 +52,12 @@ public class DefaultTypeFinder implements TypeFinder {
 	@Override
 	public Map<String, Class<?>> getParameterTypes(Method method, String[] parameterPaths) {
 		Map<String,Class<?>> result = new HashMap<>();
-		String[] parameterNamesFor = provider.parameterNamesFor(method);
+		Parameter[] parametersFor = provider.parametersFor(method);
 		for (String path : parameterPaths) {
-			for (int i = 0; i < parameterNamesFor.length; i++) {
-				String name = parameterNamesFor[i];
-				if (path.startsWith(name + ".") || path.equals(name)) {
+			for (Parameter parameter: parametersFor) {
+				if (path.startsWith(parameter.getName() + ".") || path.equals(parameter.getName())) {
 					String[] items = path.split("\\.");
-					Class<?> type = method.getParameterTypes()[i];
+					Class<?> type = parameter.getType();
 					for (int j = 1; j < items.length; j++) {
 						String item = items[j];
 						try {
